@@ -3,6 +3,8 @@ Manic Miner on the Arduino UNO with composite output
 
 This is a project to demonstrate the use of my game engine, with a port of Manic Miner, originally for the ZX Spectrum, by Matthew Smith. This is currently in progress.
 
+![Render](./images/4.jpg?raw=true)
+
 Engine Features:
 
 + Composite output using 2 resistors
@@ -27,5 +29,12 @@ Game Features:
 + 2 channel audio with original music
 + Special end screen and message if you complete the game!
 
+![Render](./images/1.jpg?raw=true)
+
+![Render](./images/2.jpg?raw=true)
+
+![Render](./images/3.jpg?raw=true)
+
+![Render](./images/5.jpg?raw=true)
 
 
