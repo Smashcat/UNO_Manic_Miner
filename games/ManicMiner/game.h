@@ -1,3 +1,21 @@
+/*
+ 
+ This file is part of Manic Miner for Arduino UNO.
+ Copyright (C) 2024 Scott Porter
+
+ Manic Miner for Arduino UNO is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by the Free Software 
+ Foundation, either version 3 of the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ See the  GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 extern "C" { void storeHi(); }
 
 uint8_t getWillyFrame(){
@@ -244,6 +262,8 @@ void setState(GameState nextState){
     air=0;
     hideSprites();
     levelState=levelNotLoaded;
+    jmpV=0;
+    sfxV=0;
     break;
     case gameOver:
     restoreFontLine=0;
@@ -864,12 +884,10 @@ void gameLoop(){
               sY=(sY&0xf8)+8;
               willyFlags[0]=0;
               yVel=0;
-              if(vXVel!=0){
-                if((vXVel>0 && CAN_MOVE_RIGHT) || (vXVel<0 && CAN_MOVE_LEFT)){
-                  //xVel=vXVel; // Pushes Willy into wall...
-                }
-                vXVel=0;
+              if( ((vXVel>0) && (aD&CAN_MOVE_RIGHT)) || ((vXVel<0) && (aD&CAN_MOVE_LEFT)) ){
+                xVel=vXVel; // Pushes Willy into wall...
               }
+              vXVel=0;
             }
           }
           
@@ -990,31 +1008,24 @@ void gameLoop(){
       break;
 
       case levelClear:
-        if(gix==0){
-          if(air>0){
-            score+=5;
-            --air;
-            sfxV=250-air;
-            jmpV=220-air;
-            drawAirBar();
-            showScore();
-          }else{
-            levelState=levelLoaded;
-            if(++level==20){
-              level=0;
-            }
-            setState(levelStart);
+        if(air>0){
+          score+=5;
+          --air;
+          sfxV=250-air;
+          jmpV=220-air;
+          drawAirBar();
+          showScore();
+        }else{
+          levelState=levelLoaded;
+          if(++level==20){
+            level=0;
           }
+          setState(levelStart);
         }
       break;
       
       case lostLife:
       {
-        if(gix==0){
-          jmpV=0;
-          sfxV=0;
-          gix=1;
-        }
         sfxV+=15;
         jmpV+=12;
         ++giy;
@@ -1110,7 +1121,7 @@ void gameLoop(){
         
         for(giy=0;giy<9;giy++){
           if((currentFrame%((giy>>2)+2))==0){
-            if(++spriteData[giy].defIX==148){
+            if(++spriteData[giy].defIX==149){
               if(giy<4){
                 giu=(random(96)&0xf0);
               }else{
@@ -1122,13 +1133,13 @@ void gameLoop(){
             }
           }
         }
-        if(giz<111){
+        if(giz<115){
           jmpV-=16;
           if(--jmpV<140){
-            jmpV=235;
+            jmpV=255;
           }
           if((currentFrame%4)==0){
-           drawBigText(13,10,giz,gameHeader.congratulationsText);
+           drawBigText(13,11,giz,gameHeader.congratulationsText);
             ++giz;
           }
         }else{

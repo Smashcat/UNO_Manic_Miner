@@ -1,18 +1,28 @@
 /*
- * From UART 150R       D1
- * From Suppress 0R     D4
- * From Sync 1.2K       B1
- * FROM PWMA 470R       B3
- * From PWMB 470R       D6
- * B                    C0
- * A                    C1
- * Down                 C2
- * Up                   C3
- * Right                C4
- * Left                 C5
- * Start                B0
- * Option               D2
- */ 
+ 
+ This file is part of Manic Miner for Arduino UNO.
+ Copyright (C) 2024 Scott Porter
+
+ Manic Miner for Arduino UNO is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by the Free Software 
+ Foundation, either version 3 of the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ See the  GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
+/**
+ * 
+ * Original game by Matthew Smith for ZX Spectrum 48K in 1983. 
+ * 
+ * Thanks to ceptimus on YouTube for information about the correct timings for the sync pulses!
+ * 
+ */
 
 #include "defs.h"
 #include "types.h"
@@ -27,29 +37,30 @@
 #include "funcs.h"
 #include "game.h"
 
-ISR(TIMER1_OVF_vect) { // TIMER1_OVF vector occurs at the start of each scan line's sync pulse
-	if (++scanline == 312) {
-		OCR1A = 948; // scan lines 0 - 7 have wide 59.3us sync pulses
-		scanline = 0;
-	} else if (scanline == 8) {
-		OCR1A = 74; // swap to short 4.7us sync pulses for scan lines 8 - 311
-		// asm("SBI 3, 5"); // toggle LED_BUILTIN
-		// enabling the interrupt generates an immediate 'stored up' interrupt
-		// so enable it one scan line early, test and return within interrupt handler to ignore 1st one
-	}	else if (scanline == TOP_EDGE) { // scan line 51 is first 'text safe' scan line - will already have been incremented to 52 here
+// Called at the start of each scan line's sync pulse, even when not drawing
+ISR(TIMER1_OVF_vect){ 
+	if(++scanline==312){
+		OCR1A=948;  // scan lines 0 - 7 have wide 59.3us sync pulses
+		scanline=0;
+	}else if(scanline==8){
+		OCR1A = 74; // scan lines 8 - 311 have short 4.7us sync pulses
+	}else if(scanline==TOP_EDGE){
+    // Start interrupt to output pixels. Enabling interrupt causes it to fire immediately, 
+    // so we use the first trigger to set up variables for rendering to display
+    #if USE_MASK
+    OCR1B = LEFT_EDGE+(hScroll*2); // Used for "hardware" horizontal scrolling if enabled (not used in Manic Miner)
+    #endif
 		TIMSK1 |= _BV(OCIE1B);
 	}
 }
 
-ISR(TIMER1_COMPB_vect) { // occurs at start of 'text safe' area of scan lines 51 - 280
+// Only called for initial frame setup scanline (not drawn), then active scanlines
+ISR(TIMER1_COMPB_vect) {
 	static int8_t slice;
   static uint8_t screenRamRow;
 	tcnt = TCNT1; // capture timer to allow jitter correction
 	
 	if(scanline==TOP_EDGE) { // on stored-up 'false trigger' scanline, initialize the pointers etc
-    #if USE_MASK
-    OCR1B = LEFT_EDGE+(hScroll*2);
-    #endif
 		slice = (vScroll&0x07);
     if(altFontLine==0){
      tileDataIX=altFontIX;
@@ -68,7 +79,7 @@ ISR(TIMER1_COMPB_vect) { // occurs at start of 'text safe' area of scan lines 51
       screenRamRow=0;
       pScreenRam=screenRam+(screenRamRow*BYTES_PER_BUFFER_LINE);
       #if USE_MASK
-      OCR1B = LEFT_EDGE-3;
+      OCR1B = LEFT_EDGE-3;  // If horizontal scrolling in use, ensure scroll position is reset when lineCompare is triggered!
       hScrollSMask=0x7f>>(7-0);
       hScrollEMask=0xfe<<0;
       #endif

@@ -1,3 +1,21 @@
+/*
+ 
+ This file is part of Manic Miner for Arduino UNO.
+ Copyright (C) 2024 Scott Porter
+
+ Manic Miner for Arduino UNO is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by the Free Software 
+ Foundation, either version 3 of the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+ without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ See the  GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+ */
+
 #include "defs.h"
 
 .equ   DDRD, 0x0A
@@ -165,22 +183,18 @@ jitterFix2:
  
 jitterFix3:
 
-	; when USART is awoken, it insists on clocking out at least one high pixel, no matter what we do.
-	; so to suppress that, we use an IO pin, active low, to ground the video signal after the resistor.
-	; once the USART has got going, we switch the IO pin back to input mode so it stops grounding the video signal.
-	; interestingly, when the USART is put to sleep at the end of the row, then its output goes low.
-	; this is true even when the last pixel sent was high.
-  SUPPRESS
+  SUPPRESS  // Prevent UART initially sending a high signal to the output when its enabled by pulling the suppress pin low
 
   MOVW R26, R24 ; X = pScreenRam
   LDI R25, 0x08
 #if USE_MASK
   LDS R18,hScrollSMask;
 #endif
-  ; // Using registers: 20,21, 22,23, 24, 26,27 (X), 28,29 (Y), 30,31 (Z)
-  ; // Spare: 18,19,25 (after first UART send)
-  ; // Can reuse in NOPs: R20, R30,R31 (Z)
-loop: ;                                          cycles
+
+  // Lots of loop unrolling here. We use almost all of the time in between loading the UART to get the data ready for the next byte, clearing the line-buffer,
+  // and also preparing some data for the line-buffer generation after the tiles+previous line-buffer have all been sent to the display. There
+  // are only 4 NOPs left which is obviously a TRAVESTY! but there is really nothing else I could use them for currently.
+  
   LD R24, X+ ; get character from screen ram // +2 =  2
   MOVW R30, R22 ; Z = fontSlice              // +1 =  3
   ADD R30, R24                               // +1 =  4
@@ -597,7 +611,6 @@ loop: ;                                          cycles
 
   MOVW R24,R28            ; Store pointer to start of processedSprite data to reset Y for each sprite
 
-spriteLoop:
   IN R18,GPIOR0
   CPI  R18,16              ; R18 is positive, so check if 16 pixels or less above scanline
   BRCC notOnLine0          ; 16 or more pixels, so it's not displayed 
