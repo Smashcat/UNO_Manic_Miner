@@ -9,4 +9,5 @@ This folder contains the files for the PCB that can be used with this project.
 + ./production-files - These can be used to have the PCB fully assembled at JLCPCB. If using another service, the gerbers should be compatible.
 
 ![Render](./images/3d.png?raw=true)
-![Render](./images/schematic.jpg?raw=true)
+
+![Render](./images/schematic.png?raw=true)
