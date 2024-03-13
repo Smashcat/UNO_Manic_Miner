@@ -1502,7 +1502,7 @@ Created by Upverter.com</description>
 <part name="U$1" library="untitled" library_urn="urn:adsk.eagle:library:43570479" deviceset="VG039NCHXTB153" device="" package3d_urn="urn:adsk.eagle:package:43570482/2"/>
 <part name="U$2" library="adafruit" library_urn="urn:adsk.eagle:library:21079626" deviceset="ARDUINO" device="-BPLACE" package3d_urn="urn:adsk.eagle:package:21080989/1"/>
 <part name="Q2" library="On Semiconductor - BC849BLT1G" library_urn="urn:adsk.eagle:library:22357129" deviceset="ON_SEMICONDUCTOR_BC849BLT1G" device="ON_SEMICONDUCTOR_BC849BLT1G_0_0" package3d_urn="urn:adsk.eagle:package:22357132/2"/>
-<part name="R2" library="ESP32_DMX_Audio" library_urn="urn:adsk.eagle:library:21091620" deviceset="52101-101-REV-A_RC-MASTER-SMD_R_" device="0603MP" package3d_urn="urn:adsk.eagle:package:21091780/2" value="180R"/>
+<part name="R2" library="ESP32_DMX_Audio" library_urn="urn:adsk.eagle:library:21091620" deviceset="52101-101-REV-A_RC-MASTER-SMD_R_" device="0603MP" package3d_urn="urn:adsk.eagle:package:21091780/2" value="220R"/>
 <part name="R3" library="ESP32_DMX_Audio" library_urn="urn:adsk.eagle:library:21091620" deviceset="52101-101-REV-A_RC-MASTER-SMD_R_" device="0603MP" package3d_urn="urn:adsk.eagle:package:21091780/2" value="1K2"/>
 <part name="R8" library="ESP32_DMX_Audio" library_urn="urn:adsk.eagle:library:21091620" deviceset="52101-101-REV-A_RC-MASTER-SMD_R_" device="0603MP" package3d_urn="urn:adsk.eagle:package:21091780/2" value="470R"/>
 <part name="R5" library="ESP32_DMX_Audio" library_urn="urn:adsk.eagle:library:21091620" deviceset="52101-101-REV-A_RC-MASTER-SMD_R_" device="0603MP" package3d_urn="urn:adsk.eagle:package:21091780/2" value="3K"/>
@@ -1534,7 +1534,7 @@ Created by Upverter.com</description>
 <part name="GND13" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="B8" library="K2-1107ST-A4SW-06" library_urn="urn:adsk.eagle:library:30827574" deviceset="K2-1107ST-A4SW-06" device="" package3d_urn="urn:adsk.eagle:package:30827578/3"/>
 <part name="GND14" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="R1" library="ESP32_DMX_Audio" library_urn="urn:adsk.eagle:library:21091620" deviceset="52101-101-REV-A_RC-MASTER-SMD_R_" device="0603MP" package3d_urn="urn:adsk.eagle:package:21091780/2" value="DNP"/>
+<part name="R1" library="ESP32_DMX_Audio" library_urn="urn:adsk.eagle:library:21091620" deviceset="52101-101-REV-A_RC-MASTER-SMD_R_" device="0603MP" package3d_urn="urn:adsk.eagle:package:21091780/2" value="75R"/>
 <part name="GND15" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="U$3" library="PJ-320D-A" library_urn="urn:adsk.eagle:library:43570733" deviceset="NES-CONTROLLER-PORT" device="" package3d_urn="urn:adsk.eagle:package:43570976/2"/>
 <part name="GND16" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>

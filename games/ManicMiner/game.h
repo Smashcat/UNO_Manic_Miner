@@ -249,8 +249,6 @@ void setState(GameState nextState){
     altFontLine=255;
     break;
     case playing:
-    //jmpV=0;
-    //sfxV=0;
     break;
     case levelClear:
     restoreFontLine=0;
@@ -821,7 +819,7 @@ void gameLoop(){
               }else{
                 if(WILLY_FACING_LEFT && xVel==0){
                   SET_CHANGE_DIR;
-                }else if( (aD&CAN_MOVE_RIGHT) && WILLY_FACING_RIGHT ){ // If facing right and conveyor left, move left if possible
+                }else if( (aD&CAN_MOVE_RIGHT) && WILLY_FACING_RIGHT ){ // If facing right and conveyor right, move right if possible
                   xVel=2;
                 }
               }
@@ -885,7 +883,7 @@ void gameLoop(){
               willyFlags[0]=0;
               yVel=0;
               if( ((vXVel>0) && (aD&CAN_MOVE_RIGHT)) || ((vXVel<0) && (aD&CAN_MOVE_LEFT)) ){
-                xVel=vXVel; // Pushes Willy into wall...
+                xVel=vXVel;
               }
               vXVel=0;
             }
@@ -956,7 +954,7 @@ void gameLoop(){
             setState(lostLife);
           }
 #endif
-          if(keyState.current&(1<<BUTTON_B)){
+          if(!PRESSING_JUMP){
             gameFlags&=~GF_JUMP_LOCKOUT;
           }
           

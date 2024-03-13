@@ -26,12 +26,12 @@
 //#define DISABLE_COLLECT_PICKUPS
 
 
-#define BUTTON_B              (1<<0)
-#define BUTTON_A              (1<<1)
-#define BUTTON_DOWN           (1<<2)
-#define BUTTON_UP             (1<<3)
-#define BUTTON_RIGHT          (1<<4)
-#define BUTTON_LEFT           (1<<5)
+#define BUTTON_B              (1<<5)
+#define BUTTON_A              (1<<4)
+#define BUTTON_DOWN           (1<<3)
+#define BUTTON_UP             (1<<2)
+#define BUTTON_RIGHT          (1<<1)
+#define BUTTON_LEFT           (1<<0)
 #define BUTTON_START          (1<<6)
 #define BUTTON_OPTION         (1<<7)
 
