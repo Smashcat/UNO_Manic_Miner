@@ -402,84 +402,6 @@ by exp-lbrs.ulp</description>
 </deviceset>
 </devicesets>
 </library>
-<library name="K2-1107ST-A4SW-06" urn="urn:adsk.eagle:library:30827574">
-<description>&lt;Tactile Switches SPST-NO 6.10mm x 3.60mm 2.50mm 50mA @ 12VDC SMD RoHS&lt;/b&gt;&lt;p&gt;
-&lt;author&gt;Created by SamacSys&lt;/author&gt;</description>
-<packages>
-<package name="K21107STA4SW06" urn="urn:adsk.eagle:footprint:30827576/2" library_version="3">
-<description>&lt;b&gt;K2-1107ST-A4SW-06-1&lt;/b&gt;&lt;br&gt;
-</description>
-<smd name="1" x="-3.95" y="0" dx="1.5" dy="1" layer="1"/>
-<smd name="2" x="3.95" y="0" dx="1.5" dy="1" layer="1"/>
-<text x="-0.192" y="2.921" size="1.27" layer="25" align="center">&gt;NAME</text>
-<wire x1="-3.05" y1="-1.8" x2="3.05" y2="-1.8" width="0.2" layer="51"/>
-<wire x1="3.05" y1="-1.8" x2="3.05" y2="1.8" width="0.2" layer="51"/>
-<wire x1="3.05" y1="1.8" x2="-3.05" y2="1.8" width="0.2" layer="51"/>
-<wire x1="-3.05" y1="1.8" x2="-3.05" y2="-1.8" width="0.2" layer="51"/>
-<wire x1="3.05" y1="1.8" x2="-3.05" y2="1.8" width="0.1" layer="21"/>
-<wire x1="-3.05" y1="0.75" x2="-3.05" y2="1.8" width="0.1" layer="21"/>
-<wire x1="3.05" y1="0.75" x2="3.05" y2="1.8" width="0.1" layer="21"/>
-<wire x1="3.05" y1="-1.75" x2="3.05" y2="-0.75" width="0.1" layer="21"/>
-<wire x1="-3.05" y1="-0.75" x2="-3.05" y2="-1.8" width="0.1" layer="21"/>
-<wire x1="-2.29" y1="0" x2="-2.19" y2="0" width="0.2" layer="21" curve="180"/>
-<wire x1="-2.19" y1="0" x2="-2.29" y2="0" width="0.2" layer="21" curve="180"/>
-<wire x1="-2.29" y1="0" x2="-2.19" y2="0" width="0.2" layer="21" curve="180"/>
-<wire x1="-3.05" y1="-1.8" x2="3.1" y2="-1.8" width="0.1" layer="21"/>
-</package>
-</packages>
-<packages3d>
-<package3d name="K21107STA4SW06" urn="urn:adsk.eagle:package:30827578/3" type="model" library_version="4">
-<description>&lt;b&gt;K2-1107ST-A4SW-06-1&lt;/b&gt;&lt;br&gt;</description>
-<packageinstances>
-<packageinstance name="K21107STA4SW06"/>
-</packageinstances>
-</package3d>
-</packages3d>
-<symbols>
-<symbol name="K2-1107ST-A4SW-06" urn="urn:adsk.eagle:symbol:30827577/1" library_version="1">
-<wire x1="5.08" y1="2.54" x2="17.78" y2="2.54" width="0.254" layer="94"/>
-<wire x1="17.78" y1="-5.08" x2="17.78" y2="2.54" width="0.254" layer="94"/>
-<wire x1="17.78" y1="-5.08" x2="5.08" y2="-5.08" width="0.254" layer="94"/>
-<wire x1="5.08" y1="2.54" x2="5.08" y2="-5.08" width="0.254" layer="94"/>
-<text x="19.05" y="7.62" size="1.778" layer="95" align="center-left">&gt;NAME</text>
-<text x="19.05" y="5.08" size="1.778" layer="96" align="center-left">&gt;VALUE</text>
-<pin name="COM" x="0" y="0" length="middle"/>
-<pin name="NO" x="0" y="-2.54" length="middle"/>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="K2-1107ST-A4SW-06" urn="urn:adsk.eagle:component:30827579/3" prefix="S" library_version="4">
-<description>&lt;b&gt;Tactile Switches SPST-NO 6.10mm x 3.60mm 2.50mm 50mA @ 12VDC SMD RoHS&lt;/b&gt;&lt;p&gt;
-Source: &lt;a href="https://datasheet.lcsc.com/szlcsc/Korean-Hroparts-Elec-K2-1107ST-A4SW-06_C118141.pdf"&gt; Datasheet &lt;/a&gt;</description>
-<gates>
-<gate name="G$1" symbol="K2-1107ST-A4SW-06" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="K21107STA4SW06">
-<connects>
-<connect gate="G$1" pin="COM" pad="1"/>
-<connect gate="G$1" pin="NO" pad="2"/>
-</connects>
-<package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:30827578/3"/>
-</package3dinstances>
-<technologies>
-<technology name="">
-<attribute name="ARROW_PART_NUMBER" value="" constant="no"/>
-<attribute name="ARROW_PRICE-STOCK" value="" constant="no"/>
-<attribute name="DESCRIPTION" value="Tactile Switches SPST-NO 6.10mm x 3.60mm 2.50mm 50mA @ 12VDC SMD RoHS" constant="no"/>
-<attribute name="HEIGHT" value="2.5mm" constant="no"/>
-<attribute name="MANUFACTURER_NAME" value="Korean Hroparts Elec" constant="no"/>
-<attribute name="MANUFACTURER_PART_NUMBER" value="K2-1107ST-A4SW-06" constant="no"/>
-<attribute name="MOUSER_PART_NUMBER" value="" constant="no"/>
-<attribute name="MOUSER_PRICE-STOCK" value="" constant="no"/>
-</technology>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 <library name="untitled" urn="urn:adsk.eagle:library:43570479">
 <packages>
 <package name="VG039NCHXTB101" urn="urn:adsk.eagle:footprint:43570480/1" library_version="2">
@@ -1486,6 +1408,88 @@ Created by Upverter.com</description>
 </deviceset>
 </devicesets>
 </library>
+<library name="PTS645SM43SMTR92LFS" urn="urn:adsk.eagle:library:21082356">
+<description>&lt;C &amp; K COMPONENTS - PTS645SM43SMTR92LFS - SWITCH, SPST, 0.05A, 12VDC, SMD, 4.3MM&lt;/b&gt;&lt;p&gt;
+&lt;author&gt;Created by SamacSys&lt;/author&gt;</description>
+<packages>
+<package name="PTS645(SMT)" urn="urn:adsk.eagle:footprint:21082357/1" library_version="1" library_locally_modified="yes">
+<description>&lt;b&gt;PTS645(SMT)&lt;/b&gt;&lt;br&gt;
+</description>
+<smd name="1" x="-3.975" y="2.25" dx="1.55" dy="1.3" layer="1"/>
+<smd name="2" x="3.975" y="2.25" dx="1.55" dy="1.3" layer="1"/>
+<smd name="3" x="-3.975" y="-2.25" dx="1.55" dy="1.3" layer="1"/>
+<smd name="4" x="3.975" y="-2.25" dx="1.55" dy="1.3" layer="1"/>
+<text x="-0.189" y="0.362" size="1.27" layer="25" align="center">&gt;NAME</text>
+<text x="-0.189" y="0.362" size="1.27" layer="27" align="center">&gt;VALUE</text>
+<circle x="-6.108" y="2.939" radius="0.1209" width="0.254" layer="25"/>
+<wire x1="-3" y1="3" x2="3" y2="3" width="0.254" layer="51"/>
+<wire x1="3" y1="3" x2="3" y2="-3" width="0.254" layer="51"/>
+<wire x1="3" y1="-3" x2="-3" y2="-3" width="0.254" layer="51"/>
+<wire x1="-3" y1="-3" x2="-3" y2="3" width="0.254" layer="51"/>
+<wire x1="-3" y1="-3" x2="3" y2="-3" width="0.254" layer="21"/>
+<wire x1="3" y1="-3" x2="3" y2="3" width="0.254" layer="21"/>
+<wire x1="3" y1="3" x2="-3" y2="3" width="0.254" layer="21"/>
+<wire x1="-3" y1="3" x2="-3" y2="-3" width="0.254" layer="21"/>
+</package>
+</packages>
+<packages3d>
+<package3d name="PTS645(SMT)" urn="urn:adsk.eagle:package:21082359/2" type="model" library_version="1" library_locally_modified="yes">
+<description>&lt;b&gt;PTS645(SMT)&lt;/b&gt;&lt;br&gt;
+</description>
+<packageinstances>
+<packageinstance name="PTS645(SMT)"/>
+</packageinstances>
+</package3d>
+</packages3d>
+<symbols>
+<symbol name="PTS645SM43SMTR92LFS" urn="urn:adsk.eagle:symbol:21082358/1" library_version="1" library_locally_modified="yes">
+<wire x1="5.08" y1="2.54" x2="15.24" y2="2.54" width="0.254" layer="94"/>
+<wire x1="15.24" y1="-5.08" x2="15.24" y2="2.54" width="0.254" layer="94"/>
+<wire x1="15.24" y1="-5.08" x2="5.08" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="5.08" y1="2.54" x2="5.08" y2="-5.08" width="0.254" layer="94"/>
+<text x="16.51" y="7.62" size="1.778" layer="95" align="center-left">&gt;NAME</text>
+<text x="16.51" y="5.08" size="1.778" layer="96" align="center-left">&gt;VALUE</text>
+<pin name="1" x="0" y="0" length="middle"/>
+<pin name="2" x="0" y="-2.54" length="middle"/>
+<pin name="3" x="20.32" y="0" length="middle" rot="R180"/>
+<pin name="4" x="20.32" y="-2.54" length="middle" rot="R180"/>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="PTS645SM43SMTR92LFS" urn="urn:adsk.eagle:component:21082360/1" locally_modified="yes" prefix="S" library_version="1" library_locally_modified="yes">
+<description>&lt;b&gt;C &amp; K COMPONENTS - PTS645SM43SMTR92LFS - SWITCH, SPST, 0.05A, 12VDC, SMD, 4.3MM&lt;/b&gt;&lt;p&gt;
+Source: &lt;a href="http://www.farnell.com/datasheets/1914518.pdf"&gt; Datasheet &lt;/a&gt;</description>
+<gates>
+<gate name="G$1" symbol="PTS645SM43SMTR92LFS" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="PTS645(SMT)">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+<connect gate="G$1" pin="3" pad="3"/>
+<connect gate="G$1" pin="4" pad="4"/>
+</connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:21082359/2"/>
+</package3dinstances>
+<technologies>
+<technology name="">
+<attribute name="DESCRIPTION" value="C &amp; K COMPONENTS - PTS645SM43SMTR92LFS - SWITCH, SPST, 0.05A, 12VDC, SMD, 4.3MM" constant="no"/>
+<attribute name="HEIGHT" value="mm" constant="no"/>
+<attribute name="MANUFACTURER_NAME" value="C &amp; K COMPONENTS" constant="no"/>
+<attribute name="MANUFACTURER_PART_NUMBER" value="PTS645SM43SMTR92LFS" constant="no"/>
+<attribute name="MOUSER_PART_NUMBER" value="611-PTS645SM43SMTR92" constant="no"/>
+<attribute name="MOUSER_PRICE-STOCK" value="https://www.mouser.com/Search/Refine.aspx?Keyword=611-PTS645SM43SMTR92" constant="no"/>
+<attribute name="RS_PART_NUMBER" value="" constant="no"/>
+<attribute name="RS_PRICE-STOCK" value="" constant="no"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
 </libraries>
 <attributes>
 </attributes>
@@ -1497,8 +1501,6 @@ Created by Upverter.com</description>
 </classes>
 <parts>
 <part name="FRAME1" library="frames" library_urn="urn:adsk.eagle:library:229" deviceset="A3L-LOC" device=""/>
-<part name="B1" library="K2-1107ST-A4SW-06" library_urn="urn:adsk.eagle:library:30827574" deviceset="K2-1107ST-A4SW-06" device="" package3d_urn="urn:adsk.eagle:package:30827578/3"/>
-<part name="GND8" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="U$1" library="untitled" library_urn="urn:adsk.eagle:library:43570479" deviceset="VG039NCHXTB153" device="" package3d_urn="urn:adsk.eagle:package:43570482/2"/>
 <part name="U$2" library="adafruit" library_urn="urn:adsk.eagle:library:21079626" deviceset="ARDUINO" device="-BPLACE" package3d_urn="urn:adsk.eagle:package:21080989/1"/>
 <part name="Q2" library="On Semiconductor - BC849BLT1G" library_urn="urn:adsk.eagle:library:22357129" deviceset="ON_SEMICONDUCTOR_BC849BLT1G" device="ON_SEMICONDUCTOR_BC849BLT1G_0_0" package3d_urn="urn:adsk.eagle:package:22357132/2"/>
@@ -1520,25 +1522,27 @@ Created by Upverter.com</description>
 <part name="GND5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="P+1" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="GND6" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="B2" library="K2-1107ST-A4SW-06" library_urn="urn:adsk.eagle:library:30827574" deviceset="K2-1107ST-A4SW-06" device="" package3d_urn="urn:adsk.eagle:package:30827578/3"/>
-<part name="GND7" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="B3" library="K2-1107ST-A4SW-06" library_urn="urn:adsk.eagle:library:30827574" deviceset="K2-1107ST-A4SW-06" device="" package3d_urn="urn:adsk.eagle:package:30827578/3"/>
-<part name="GND9" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="B4" library="K2-1107ST-A4SW-06" library_urn="urn:adsk.eagle:library:30827574" deviceset="K2-1107ST-A4SW-06" device="" package3d_urn="urn:adsk.eagle:package:30827578/3"/>
-<part name="GND10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="B5" library="K2-1107ST-A4SW-06" library_urn="urn:adsk.eagle:library:30827574" deviceset="K2-1107ST-A4SW-06" device="" package3d_urn="urn:adsk.eagle:package:30827578/3"/>
 <part name="GND11" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="B6" library="K2-1107ST-A4SW-06" library_urn="urn:adsk.eagle:library:30827574" deviceset="K2-1107ST-A4SW-06" device="" package3d_urn="urn:adsk.eagle:package:30827578/3"/>
-<part name="GND12" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="B7" library="K2-1107ST-A4SW-06" library_urn="urn:adsk.eagle:library:30827574" deviceset="K2-1107ST-A4SW-06" device="" package3d_urn="urn:adsk.eagle:package:30827578/3"/>
-<part name="GND13" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="B8" library="K2-1107ST-A4SW-06" library_urn="urn:adsk.eagle:library:30827574" deviceset="K2-1107ST-A4SW-06" device="" package3d_urn="urn:adsk.eagle:package:30827578/3"/>
-<part name="GND14" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="R1" library="ESP32_DMX_Audio" library_urn="urn:adsk.eagle:library:21091620" deviceset="52101-101-REV-A_RC-MASTER-SMD_R_" device="0603MP" package3d_urn="urn:adsk.eagle:package:21091780/2" value="75R"/>
 <part name="GND15" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="U$3" library="PJ-320D-A" library_urn="urn:adsk.eagle:library:43570733" deviceset="NES-CONTROLLER-PORT" device="" package3d_urn="urn:adsk.eagle:package:43570976/2"/>
 <part name="GND16" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="P+3" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
+<part name="B5" library="PTS645SM43SMTR92LFS" library_urn="urn:adsk.eagle:library:21082356" deviceset="PTS645SM43SMTR92LFS" device="" package3d_urn="urn:adsk.eagle:package:21082359/2" override_package3d_urn="urn:adsk.eagle:package:21082337/2" override_package_urn="urn:adsk.eagle:footprint:21082338/1" override_locally_modified="yes"/>
+<part name="GND12" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="B6" library="PTS645SM43SMTR92LFS" library_urn="urn:adsk.eagle:library:21082356" deviceset="PTS645SM43SMTR92LFS" device="" package3d_urn="urn:adsk.eagle:package:21082359/2" override_package3d_urn="urn:adsk.eagle:package:21082337/2" override_package_urn="urn:adsk.eagle:footprint:21082338/1" override_locally_modified="yes"/>
+<part name="GND13" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="B7" library="PTS645SM43SMTR92LFS" library_urn="urn:adsk.eagle:library:21082356" deviceset="PTS645SM43SMTR92LFS" device="" package3d_urn="urn:adsk.eagle:package:21082359/2" override_package3d_urn="urn:adsk.eagle:package:21082337/2" override_package_urn="urn:adsk.eagle:footprint:21082338/1" override_locally_modified="yes"/>
+<part name="GND14" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="B8" library="PTS645SM43SMTR92LFS" library_urn="urn:adsk.eagle:library:21082356" deviceset="PTS645SM43SMTR92LFS" device="" package3d_urn="urn:adsk.eagle:package:21082359/2" override_package3d_urn="urn:adsk.eagle:package:21082337/2" override_package_urn="urn:adsk.eagle:footprint:21082338/1" override_locally_modified="yes"/>
+<part name="GND7" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="B1" library="PTS645SM43SMTR92LFS" library_urn="urn:adsk.eagle:library:21082356" deviceset="PTS645SM43SMTR92LFS" device="" package3d_urn="urn:adsk.eagle:package:21082359/2" override_package3d_urn="urn:adsk.eagle:package:21082337/2" override_package_urn="urn:adsk.eagle:footprint:21082338/1" override_locally_modified="yes"/>
+<part name="GND8" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="B2" library="PTS645SM43SMTR92LFS" library_urn="urn:adsk.eagle:library:21082356" deviceset="PTS645SM43SMTR92LFS" device="" package3d_urn="urn:adsk.eagle:package:21082359/2" override_package3d_urn="urn:adsk.eagle:package:21082337/2" override_package_urn="urn:adsk.eagle:footprint:21082338/1" override_locally_modified="yes"/>
+<part name="GND9" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="B3" library="PTS645SM43SMTR92LFS" library_urn="urn:adsk.eagle:library:21082356" deviceset="PTS645SM43SMTR92LFS" device="" package3d_urn="urn:adsk.eagle:package:21082359/2" override_package3d_urn="urn:adsk.eagle:package:21082337/2" override_package_urn="urn:adsk.eagle:footprint:21082338/1" override_locally_modified="yes"/>
+<part name="GND10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="B4" library="PTS645SM43SMTR92LFS" library_urn="urn:adsk.eagle:library:21082356" deviceset="PTS645SM43SMTR92LFS" device="" package3d_urn="urn:adsk.eagle:package:21082359/2" override_package3d_urn="urn:adsk.eagle:package:21082337/2" override_package_urn="urn:adsk.eagle:footprint:21082338/1" override_locally_modified="yes"/>
 </parts>
 <sheets>
 <sheet>
@@ -1564,13 +1568,6 @@ Q2 = NPN</text>
 <attribute name="DRAWING_NAME" x="344.17" y="15.24" size="2.54" layer="94"/>
 <attribute name="LAST_DATE_TIME" x="344.17" y="10.16" size="2.286" layer="94"/>
 <attribute name="SHEET" x="357.505" y="5.08" size="2.54" layer="94"/>
-</instance>
-<instance part="B1" gate="G$1" x="215.9" y="170.18" smashed="yes" rot="R180">
-<attribute name="NAME" x="212.09" y="162.56" size="1.778" layer="95" rot="R180" align="center-left"/>
-<attribute name="VALUE" x="212.09" y="165.1" size="1.778" layer="96" rot="R180" align="center-left"/>
-</instance>
-<instance part="GND8" gate="1" x="215.9" y="167.64" smashed="yes">
-<attribute name="VALUE" x="213.36" y="165.1" size="1.778" layer="96"/>
 </instance>
 <instance part="U$1" gate="G$1" x="302.26" y="121.92" smashed="yes">
 <attribute name="NAME" x="307.34" y="121.92" size="1.27" layer="95"/>
@@ -1636,54 +1633,8 @@ Q2 = NPN</text>
 <instance part="GND6" gate="1" x="86.36" y="86.36" smashed="yes">
 <attribute name="VALUE" x="83.82" y="83.82" size="1.778" layer="96"/>
 </instance>
-<instance part="B2" gate="G$1" x="233.68" y="185.42" smashed="yes" rot="R180">
-<attribute name="NAME" x="229.87" y="177.8" size="1.778" layer="95" rot="R180" align="center-left"/>
-<attribute name="VALUE" x="229.87" y="180.34" size="1.778" layer="96" rot="R180" align="center-left"/>
-</instance>
-<instance part="GND7" gate="1" x="233.68" y="182.88" smashed="yes">
-<attribute name="VALUE" x="231.14" y="180.34" size="1.778" layer="96"/>
-</instance>
-<instance part="B3" gate="G$1" x="160.02" y="180.34" smashed="yes" rot="R180">
-<attribute name="NAME" x="156.21" y="172.72" size="1.778" layer="95" rot="R180" align="center-left"/>
-<attribute name="VALUE" x="156.21" y="175.26" size="1.778" layer="96" rot="R180" align="center-left"/>
-</instance>
-<instance part="GND9" gate="1" x="160.02" y="177.8" smashed="yes">
-<attribute name="VALUE" x="157.48" y="175.26" size="1.778" layer="96"/>
-</instance>
-<instance part="B4" gate="G$1" x="190.5" y="180.34" smashed="yes" rot="R180">
-<attribute name="NAME" x="186.69" y="172.72" size="1.778" layer="95" rot="R180" align="center-left"/>
-<attribute name="VALUE" x="186.69" y="175.26" size="1.778" layer="96" rot="R180" align="center-left"/>
-</instance>
-<instance part="GND10" gate="1" x="190.5" y="177.8" smashed="yes">
-<attribute name="VALUE" x="187.96" y="175.26" size="1.778" layer="96"/>
-</instance>
-<instance part="B5" gate="G$1" x="106.68" y="193.04" smashed="yes" rot="R180">
-<attribute name="NAME" x="102.87" y="185.42" size="1.778" layer="95" rot="R180" align="center-left"/>
-<attribute name="VALUE" x="102.87" y="187.96" size="1.778" layer="96" rot="R180" align="center-left"/>
-</instance>
-<instance part="GND11" gate="1" x="106.68" y="190.5" smashed="yes">
-<attribute name="VALUE" x="104.14" y="187.96" size="1.778" layer="96"/>
-</instance>
-<instance part="B6" gate="G$1" x="106.68" y="167.64" smashed="yes" rot="R180">
-<attribute name="NAME" x="102.87" y="160.02" size="1.778" layer="95" rot="R180" align="center-left"/>
-<attribute name="VALUE" x="102.87" y="162.56" size="1.778" layer="96" rot="R180" align="center-left"/>
-</instance>
-<instance part="GND12" gate="1" x="106.68" y="165.1" smashed="yes">
-<attribute name="VALUE" x="104.14" y="162.56" size="1.778" layer="96"/>
-</instance>
-<instance part="B7" gate="G$1" x="88.9" y="180.34" smashed="yes" rot="R180">
-<attribute name="NAME" x="85.09" y="172.72" size="1.778" layer="95" rot="R180" align="center-left"/>
-<attribute name="VALUE" x="85.09" y="175.26" size="1.778" layer="96" rot="R180" align="center-left"/>
-</instance>
-<instance part="GND13" gate="1" x="88.9" y="177.8" smashed="yes">
-<attribute name="VALUE" x="86.36" y="175.26" size="1.778" layer="96"/>
-</instance>
-<instance part="B8" gate="G$1" x="124.46" y="180.34" smashed="yes" rot="R180">
-<attribute name="NAME" x="120.65" y="172.72" size="1.778" layer="95" rot="R180" align="center-left"/>
-<attribute name="VALUE" x="120.65" y="175.26" size="1.778" layer="96" rot="R180" align="center-left"/>
-</instance>
-<instance part="GND14" gate="1" x="124.46" y="177.8" smashed="yes">
-<attribute name="VALUE" x="121.92" y="175.26" size="1.778" layer="96"/>
+<instance part="GND11" gate="1" x="83.82" y="193.04" smashed="yes">
+<attribute name="VALUE" x="81.28" y="190.5" size="1.778" layer="96"/>
 </instance>
 <instance part="R1" gate="G$1" x="116.84" y="86.36" smashed="yes" rot="MR270">
 <attribute name="NAME" x="118.364" y="86.36" size="1.778" layer="95" font="vector" rot="MR90" align="bottom-center"/>
@@ -1698,15 +1649,64 @@ Q2 = NPN</text>
 <instance part="P+3" gate="VCC" x="314.96" y="182.88" smashed="yes">
 <attribute name="VALUE" x="312.42" y="180.34" size="1.778" layer="96" rot="R90"/>
 </instance>
+<instance part="B5" gate="G$1" x="86.36" y="195.58" smashed="yes">
+<attribute name="NAME" x="87.63" y="203.2" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="87.63" y="200.66" size="1.778" layer="96" align="center-left"/>
+</instance>
+<instance part="GND12" gate="1" x="101.6" y="180.34" smashed="yes">
+<attribute name="VALUE" x="99.06" y="177.8" size="1.778" layer="96"/>
+</instance>
+<instance part="B6" gate="G$1" x="104.14" y="182.88" smashed="yes">
+<attribute name="NAME" x="105.41" y="190.5" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="105.41" y="187.96" size="1.778" layer="96" align="center-left"/>
+</instance>
+<instance part="GND13" gate="1" x="66.04" y="180.34" smashed="yes">
+<attribute name="VALUE" x="63.5" y="177.8" size="1.778" layer="96"/>
+</instance>
+<instance part="B7" gate="G$1" x="68.58" y="182.88" smashed="yes">
+<attribute name="NAME" x="69.85" y="190.5" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="69.85" y="187.96" size="1.778" layer="96" align="center-left"/>
+</instance>
+<instance part="GND14" gate="1" x="83.82" y="167.64" smashed="yes">
+<attribute name="VALUE" x="81.28" y="165.1" size="1.778" layer="96"/>
+</instance>
+<instance part="B8" gate="G$1" x="86.36" y="170.18" smashed="yes">
+<attribute name="NAME" x="87.63" y="177.8" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="87.63" y="175.26" size="1.778" layer="96" align="center-left"/>
+</instance>
+<instance part="GND7" gate="1" x="137.16" y="180.34" smashed="yes">
+<attribute name="VALUE" x="134.62" y="177.8" size="1.778" layer="96"/>
+</instance>
+<instance part="B1" gate="G$1" x="139.7" y="182.88" smashed="yes">
+<attribute name="NAME" x="140.97" y="190.5" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="140.97" y="187.96" size="1.778" layer="96" align="center-left"/>
+</instance>
+<instance part="GND8" gate="1" x="167.64" y="180.34" smashed="yes">
+<attribute name="VALUE" x="165.1" y="177.8" size="1.778" layer="96"/>
+</instance>
+<instance part="B2" gate="G$1" x="170.18" y="182.88" smashed="yes">
+<attribute name="NAME" x="171.45" y="190.5" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="171.45" y="187.96" size="1.778" layer="96" align="center-left"/>
+</instance>
+<instance part="GND9" gate="1" x="210.82" y="185.42" smashed="yes">
+<attribute name="VALUE" x="208.28" y="182.88" size="1.778" layer="96"/>
+</instance>
+<instance part="B3" gate="G$1" x="213.36" y="187.96" smashed="yes">
+<attribute name="NAME" x="214.63" y="195.58" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="214.63" y="193.04" size="1.778" layer="96" align="center-left"/>
+</instance>
+<instance part="GND10" gate="1" x="193.04" y="170.18" smashed="yes">
+<attribute name="VALUE" x="190.5" y="167.64" size="1.778" layer="96"/>
+</instance>
+<instance part="B4" gate="G$1" x="195.58" y="172.72" smashed="yes">
+<attribute name="NAME" x="196.85" y="180.34" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="196.85" y="177.8" size="1.778" layer="96" align="center-left"/>
+</instance>
 </instances>
 <busses>
 </busses>
 <nets>
 <net name="GND" class="0">
-<segment>
-<pinref part="GND8" gate="1" pin="GND"/>
-<pinref part="B1" gate="G$1" pin="COM"/>
-</segment>
 <segment>
 <pinref part="GND1" gate="1" pin="GND"/>
 <pinref part="R6" gate="G$1" pin="2"/>
@@ -1738,34 +1738,6 @@ Q2 = NPN</text>
 <wire x1="86.36" y1="88.9" x2="83.82" y2="88.9" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="GND7" gate="1" pin="GND"/>
-<pinref part="B2" gate="G$1" pin="COM"/>
-</segment>
-<segment>
-<pinref part="GND9" gate="1" pin="GND"/>
-<pinref part="B3" gate="G$1" pin="COM"/>
-</segment>
-<segment>
-<pinref part="GND10" gate="1" pin="GND"/>
-<pinref part="B4" gate="G$1" pin="COM"/>
-</segment>
-<segment>
-<pinref part="GND11" gate="1" pin="GND"/>
-<pinref part="B5" gate="G$1" pin="COM"/>
-</segment>
-<segment>
-<pinref part="GND12" gate="1" pin="GND"/>
-<pinref part="B6" gate="G$1" pin="COM"/>
-</segment>
-<segment>
-<pinref part="GND13" gate="1" pin="GND"/>
-<pinref part="B7" gate="G$1" pin="COM"/>
-</segment>
-<segment>
-<pinref part="GND14" gate="1" pin="GND"/>
-<pinref part="B8" gate="G$1" pin="COM"/>
-</segment>
-<segment>
 <pinref part="GND15" gate="1" pin="GND"/>
 <pinref part="R1" gate="G$1" pin="2"/>
 </segment>
@@ -1773,6 +1745,46 @@ Q2 = NPN</text>
 <pinref part="GND16" gate="1" pin="GND"/>
 <pinref part="U$3" gate="G$1" pin="GND"/>
 <wire x1="266.7" y1="182.88" x2="279.4" y2="182.88" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="B5" gate="G$1" pin="1"/>
+<pinref part="GND11" gate="1" pin="GND"/>
+<wire x1="83.82" y1="195.58" x2="86.36" y2="195.58" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="B6" gate="G$1" pin="1"/>
+<pinref part="GND12" gate="1" pin="GND"/>
+<wire x1="101.6" y1="182.88" x2="104.14" y2="182.88" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="B7" gate="G$1" pin="1"/>
+<pinref part="GND13" gate="1" pin="GND"/>
+<wire x1="66.04" y1="182.88" x2="68.58" y2="182.88" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="B8" gate="G$1" pin="1"/>
+<pinref part="GND14" gate="1" pin="GND"/>
+<wire x1="83.82" y1="170.18" x2="86.36" y2="170.18" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="B1" gate="G$1" pin="1"/>
+<pinref part="GND7" gate="1" pin="GND"/>
+<wire x1="137.16" y1="182.88" x2="139.7" y2="182.88" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="B2" gate="G$1" pin="1"/>
+<pinref part="GND8" gate="1" pin="GND"/>
+<wire x1="167.64" y1="182.88" x2="170.18" y2="182.88" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="B3" gate="G$1" pin="1"/>
+<pinref part="GND9" gate="1" pin="GND"/>
+<wire x1="210.82" y1="187.96" x2="213.36" y2="187.96" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="B4" gate="G$1" pin="1"/>
+<pinref part="GND10" gate="1" pin="GND"/>
+<wire x1="193.04" y1="172.72" x2="195.58" y2="172.72" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="BUT_B" class="0">
@@ -1783,8 +1795,8 @@ Q2 = NPN</text>
 </segment>
 <segment>
 <wire x1="218.44" y1="172.72" x2="215.9" y2="172.72" width="0.1524" layer="91"/>
-<pinref part="B1" gate="G$1" pin="NO"/>
 <label x="218.44" y="172.72" size="0.762" layer="95" xref="yes"/>
+<pinref part="B4" gate="G$1" pin="3"/>
 </segment>
 <segment>
 <wire x1="276.86" y1="175.26" x2="279.4" y2="175.26" width="0.1524" layer="91"/>
@@ -1800,8 +1812,8 @@ Q2 = NPN</text>
 </segment>
 <segment>
 <wire x1="236.22" y1="187.96" x2="233.68" y2="187.96" width="0.1524" layer="91"/>
-<pinref part="B2" gate="G$1" pin="NO"/>
 <label x="236.22" y="187.96" size="0.762" layer="95" xref="yes"/>
+<pinref part="B3" gate="G$1" pin="3"/>
 </segment>
 <segment>
 <wire x1="276.86" y1="177.8" x2="279.4" y2="177.8" width="0.1524" layer="91"/>
@@ -1817,8 +1829,8 @@ Q2 = NPN</text>
 </segment>
 <segment>
 <wire x1="109.22" y1="170.18" x2="106.68" y2="170.18" width="0.1524" layer="91"/>
-<pinref part="B6" gate="G$1" pin="NO"/>
 <label x="109.22" y="170.18" size="0.762" layer="95" xref="yes"/>
+<pinref part="B8" gate="G$1" pin="3"/>
 </segment>
 <segment>
 <wire x1="276.86" y1="180.34" x2="279.4" y2="180.34" width="0.1524" layer="91"/>
@@ -1834,8 +1846,8 @@ Q2 = NPN</text>
 </segment>
 <segment>
 <wire x1="109.22" y1="195.58" x2="106.68" y2="195.58" width="0.1524" layer="91"/>
-<pinref part="B5" gate="G$1" pin="NO"/>
 <label x="109.22" y="195.58" size="0.762" layer="95" xref="yes"/>
+<pinref part="B5" gate="G$1" pin="3"/>
 </segment>
 </net>
 <net name="BUT_RIGHT" class="0">
@@ -1846,8 +1858,8 @@ Q2 = NPN</text>
 </segment>
 <segment>
 <wire x1="127" y1="182.88" x2="124.46" y2="182.88" width="0.1524" layer="91"/>
-<pinref part="B8" gate="G$1" pin="NO"/>
 <label x="127" y="182.88" size="0.762" layer="95" xref="yes"/>
+<pinref part="B6" gate="G$1" pin="3"/>
 </segment>
 </net>
 <net name="BUT_LEFT" class="0">
@@ -1858,8 +1870,8 @@ Q2 = NPN</text>
 </segment>
 <segment>
 <wire x1="91.44" y1="182.88" x2="88.9" y2="182.88" width="0.1524" layer="91"/>
-<pinref part="B7" gate="G$1" pin="NO"/>
 <label x="91.44" y="182.88" size="0.762" layer="95" xref="yes"/>
+<pinref part="B7" gate="G$1" pin="3"/>
 </segment>
 </net>
 <net name="SYNC_OUT" class="0">
@@ -1930,8 +1942,8 @@ Q2 = NPN</text>
 <net name="BUT_OPTION" class="0">
 <segment>
 <wire x1="162.56" y1="182.88" x2="160.02" y2="182.88" width="0.1524" layer="91"/>
-<pinref part="B3" gate="G$1" pin="NO"/>
 <label x="162.56" y="182.88" size="0.762" layer="95" xref="yes"/>
+<pinref part="B1" gate="G$1" pin="3"/>
 </segment>
 <segment>
 <wire x1="134.62" y1="96.52" x2="137.16" y2="96.52" width="0.1524" layer="91"/>
@@ -1942,8 +1954,8 @@ Q2 = NPN</text>
 <net name="BUT_START" class="0">
 <segment>
 <wire x1="193.04" y1="182.88" x2="190.5" y2="182.88" width="0.1524" layer="91"/>
-<pinref part="B4" gate="G$1" pin="NO"/>
 <label x="193.04" y="182.88" size="0.762" layer="95" xref="yes"/>
+<pinref part="B2" gate="G$1" pin="3"/>
 </segment>
 <segment>
 <wire x1="134.62" y1="114.3" x2="137.16" y2="114.3" width="0.1524" layer="91"/>
@@ -2070,6 +2082,11 @@ will not be understood (or retained) with this version.
 Since Version 8.3, EAGLE supports the association of 3D packages
 with devices in libraries, schematics, and board files. Those 3D
 packages will not be understood (or retained) with this version.
+</note>
+<note version="9.4" severity="warning">
+Since Version 9.4, EAGLE supports the overriding of 3D packages
+in schematics and board files. Those overridden 3d packages
+will not be understood (or retained) with this version.
 </note>
 </compatibility>
 </eagle>
