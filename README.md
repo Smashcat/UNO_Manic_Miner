@@ -38,6 +38,8 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 
 ## Screen-shots:
 
+# CRT monitor:
+
 ![Render](./images/1.jpg?raw=true)
 
 ![Render](./images/2.jpg?raw=true)
@@ -47,5 +49,12 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 ![Render](./images/4.jpg?raw=true)
 
 ![Render](./images/5.jpg?raw=true)
+
+
+# TFT TV screen:
+
+![Render](./images/6.jpg?raw=true)
+
+![Render](./images/7.jpg?raw=true)
 
 
