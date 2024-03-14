@@ -1547,8 +1547,8 @@ Created by Upverter.com</description>
 <text x="55.88" y="144.78" size="5.08" layer="97">Audio/Video outputs</text>
 <text x="256.54" y="205.74" size="5.08" layer="97">NES Controller</text>
 <text x="256.54" y="144.78" size="5.08" layer="97">Speaker output (optional)</text>
-<text x="241.3" y="137.16" size="2.54" layer="97" rot="R180">R1 = DNP
-R2 = 150R
+<text x="241.3" y="137.16" size="2.54" layer="97" rot="R180">R1 = 75R
+R2 = 470R
 R3 = 1K2
 R4 = 3K
 R5 = 3K
