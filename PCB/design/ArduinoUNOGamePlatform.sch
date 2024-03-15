@@ -1160,14 +1160,14 @@ Created by Upverter.com</description>
 <smd name="2" x="5.1" y="3.25" dx="1.2" dy="2.5" layer="1"/>
 <smd name="4" x="-1.9" y="3.25" dx="1.2" dy="2.5" layer="1"/>
 </package>
-<package name="NES-CONTROLLER-SOCKET" urn="urn:adsk.eagle:footprint:43570974/1" library_version="4">
-<pad name="1" x="-6.096" y="-12.8524" drill="1.4" shape="square"/>
-<pad name="2" x="-2.032" y="-12.8524" drill="1.4" shape="square"/>
-<pad name="3" x="2.032" y="-12.8524" drill="1.4" shape="square"/>
-<pad name="4" x="6.096" y="-12.8524" drill="1.4" shape="square"/>
-<pad name="8" x="-6.096" y="-10.541" drill="1.4" shape="square"/>
-<pad name="7" x="-2.032" y="-10.541" drill="1.4" shape="square"/>
-<pad name="6" x="2.032" y="-10.541" drill="1.4" shape="square"/>
+<package name="NES-CONTROLLER-SOCKET" urn="urn:adsk.eagle:footprint:43570974/2" library_version="5">
+<pad name="5" x="-6.096" y="-12.8524" drill="1.4" shape="square"/>
+<pad name="6" x="-2.032" y="-12.8524" drill="1.4" shape="square"/>
+<pad name="7" x="2.032" y="-12.8524" drill="1.4" shape="square"/>
+<pad name="8" x="6.096" y="-12.8524" drill="1.4" shape="square"/>
+<pad name="3" x="-2.032" y="-10.16" drill="1.4" shape="square"/>
+<pad name="2" x="2.032" y="-10.16" drill="1.4" shape="square"/>
+<pad name="1" x="6.096" y="-10.16" drill="1.4" shape="square"/>
 <wire x1="-8.128" y1="-7.112" x2="8.128" y2="-7.112" width="0.127" layer="21"/>
 <wire x1="-8.128" y1="-7.112" x2="-8.128" y2="-13.3604" width="0.127" layer="21"/>
 <wire x1="-8.128" y1="-13.3604" x2="8.128" y2="-13.3604" width="0.127" layer="21"/>
@@ -1176,8 +1176,8 @@ Created by Upverter.com</description>
 <wire x1="-12.446" y1="7.112" x2="12.446" y2="7.112" width="0.127" layer="21"/>
 <wire x1="-12.446" y1="7.112" x2="-12.446" y2="-7.112" width="0.127" layer="21"/>
 <wire x1="12.446" y1="7.112" x2="12.446" y2="-7.112" width="0.127" layer="21"/>
-<hole x="-9.906" y="0" drill="3.683"/>
-<hole x="9.906" y="0" drill="3.683"/>
+<hole x="-9.906" y="0" drill="3.8"/>
+<hole x="9.906" y="0" drill="3.8"/>
 <circle x="-9.906" y="0" radius="2.2225" width="0.127" layer="21"/>
 <circle x="9.906" y="0" radius="2.2225" width="0.127" layer="21"/>
 <text x="0" y="-1.27" size="1.27" layer="21" align="center">NES PORT</text>
@@ -1190,7 +1190,7 @@ Created by Upverter.com</description>
 <packageinstance name="HRO_PJ-320D-A"/>
 </packageinstances>
 </package3d>
-<package3d name="NES-CONTROLLER-SOCKET" urn="urn:adsk.eagle:package:43570976/2" type="empty" library_version="4">
+<package3d name="NES-CONTROLLER-SOCKET" urn="urn:adsk.eagle:package:43570976/3" type="empty" library_version="5">
 <packageinstances>
 <packageinstance name="NES-CONTROLLER-SOCKET"/>
 </packageinstances>
@@ -1221,7 +1221,7 @@ Created by Upverter.com</description>
 <pin name="TIP" x="7.62" y="-5.08" visible="pad" length="short" direction="pas" rot="R180"/>
 <pin name="RING2" x="7.62" y="-7.62" visible="pad" length="short" direction="pas" rot="R180"/>
 </symbol>
-<symbol name="NES-CONTROLLER-SOCKET" urn="urn:adsk.eagle:symbol:43570975/1" library_version="4">
+<symbol name="NES-CONTROLLER-SOCKET" urn="urn:adsk.eagle:symbol:43570975/2" library_version="5">
 <pin name="GND" x="-15.24" y="2.54" length="middle"/>
 <pin name="CLOCK" x="-15.24" y="0" length="middle"/>
 <pin name="LATCH" x="-15.24" y="-2.54" length="middle"/>
@@ -1268,23 +1268,23 @@ Created by Upverter.com</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="NES-CONTROLLER-PORT" urn="urn:adsk.eagle:component:43570977/2" library_version="4">
+<deviceset name="NES-CONTROLLER-PORT" urn="urn:adsk.eagle:component:43570977/3" library_version="5">
 <gates>
 <gate name="G$1" symbol="NES-CONTROLLER-SOCKET" x="0" y="0"/>
 </gates>
 <devices>
 <device name="" package="NES-CONTROLLER-SOCKET">
 <connects>
-<connect gate="G$1" pin="CLOCK" pad="3"/>
-<connect gate="G$1" pin="DATA" pad="1"/>
-<connect gate="G$1" pin="GND" pad="4"/>
-<connect gate="G$1" pin="LATCH" pad="2"/>
-<connect gate="G$1" pin="NC@1" pad="7"/>
-<connect gate="G$1" pin="NC@2" pad="8"/>
-<connect gate="G$1" pin="VCC" pad="6"/>
+<connect gate="G$1" pin="CLOCK" pad="6"/>
+<connect gate="G$1" pin="DATA" pad="8"/>
+<connect gate="G$1" pin="GND" pad="5"/>
+<connect gate="G$1" pin="LATCH" pad="7"/>
+<connect gate="G$1" pin="NC@1" pad="2"/>
+<connect gate="G$1" pin="NC@2" pad="1"/>
+<connect gate="G$1" pin="VCC" pad="3"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:43570976/2"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:43570976/3"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -1525,7 +1525,7 @@ Source: &lt;a href="http://www.farnell.com/datasheets/1914518.pdf"&gt; Datasheet
 <part name="GND11" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="R1" library="ESP32_DMX_Audio" library_urn="urn:adsk.eagle:library:21091620" deviceset="52101-101-REV-A_RC-MASTER-SMD_R_" device="0603MP" package3d_urn="urn:adsk.eagle:package:21091780/2" value="75R"/>
 <part name="GND15" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="U$3" library="PJ-320D-A" library_urn="urn:adsk.eagle:library:43570733" deviceset="NES-CONTROLLER-PORT" device="" package3d_urn="urn:adsk.eagle:package:43570976/2"/>
+<part name="U$3" library="PJ-320D-A" library_urn="urn:adsk.eagle:library:43570733" deviceset="NES-CONTROLLER-PORT" device="" package3d_urn="urn:adsk.eagle:package:43570976/3"/>
 <part name="GND16" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="P+3" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="B5" library="PTS645SM43SMTR92LFS" library_urn="urn:adsk.eagle:library:21082356" deviceset="PTS645SM43SMTR92LFS" device="" package3d_urn="urn:adsk.eagle:package:21082359/2" override_package3d_urn="urn:adsk.eagle:package:21082337/2" override_package_urn="urn:adsk.eagle:footprint:21082338/1" override_locally_modified="yes"/>
