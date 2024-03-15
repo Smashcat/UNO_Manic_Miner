@@ -332,7 +332,7 @@ void drawBigText(uint8_t x,uint8_t y,uint8_t len,const uint8_t *src){
   }
 }
 
-void drawMenu(uint8_t *txt,uint8_t len, uint8_t xPos, uint8_t yPos){
+void drawMenu(uint8_t len, uint8_t xPos, uint8_t yPos){
   drawBigText(xPos,yPos,len,gameHeader.optionText);
   uint8_t c,chr;
   for(uint8_t n=0;n<5;n++){
@@ -354,14 +354,16 @@ void drawMenu(uint8_t *txt,uint8_t len, uint8_t xPos, uint8_t yPos){
     sL/=10;
   }
 
-  if((currentFrame%4)>1){
+  if((currentFrame%32)>15){
+    uint8_t *p=screenRam+((yPos+(cursorY*2))*BYTES_PER_BUFFER_LINE)+xPos;
     for(uint8_t n=0;n<17;n++){
-      screenRam[((yPos+(cursorY*2))*BYTES_PER_BUFFER_LINE)+n+xPos]=0;
-      screenRam[((yPos+1+(cursorY*2))*BYTES_PER_BUFFER_LINE)+n+xPos]=0;
+      *p++=0;
+      *(p+BYTES_PER_BUFFER_LINE-1)=0;
     }
   }
 
-  if(!PRESSING_UP && !PRESSING_DOWN && !PRESSING_LEFT && !PRESSING_RIGHT && !PRESSING_JUMP){
+ //if(!PRESSING_UP && !PRESSING_DOWN && !PRESSING_LEFT && !PRESSING_RIGHT && !PRESSING_JUMP){
+  if(NOTHING_PRESSED){
     gameFlags&=~GF_JUMP_LOCKOUT;
   }else{
     giu=0;
@@ -384,7 +386,6 @@ boolean drawTitleGfx(){
   altFontLine=0;
   restoreFontLine=212;
   altFontIX=2;
-  uint8_t *p=screenRam;
   if(giz==0){
     clearScreen(4,28,0);
   }
@@ -473,8 +474,8 @@ uint8_t getAvailableDirectionFlags(){
   uint8_t fr=sX&0x03;
   int8_t willyDir2=( (wd && fr!=0) || (!wd && fr==2) ? 2:0); // Block checking depends on direction and frame to match original game.
   
-  checkLeft=bufferRow-BYTES_PER_BUFFER_LINE+(sX+(willyDir2)>>3)+1;
-  checkRight=bufferRow-BYTES_PER_BUFFER_LINE+((sX+(willyDir2)+10)>>3)-1;
+  checkLeft=bufferRow-BYTES_PER_BUFFER_LINE+((sX+willyDir2)>>3)+1;
+  checkRight=bufferRow-BYTES_PER_BUFFER_LINE+(((sX+willyDir2)+10)>>3)-1;
   
   if(tileTypeAt(checkLeft)==3 || tileTypeAt(checkRight)==3){
     r&=~CLEAR_ABOVE;
@@ -550,7 +551,6 @@ uint8_t getAvailableDirectionFlags(){
 
 CollisionType checkCollisions(){
   CollisionType r=hitNone;
-  uint8_t willyFrame=getWillyFrame();
   uint8_t sX=spriteData[8].x;
   uint8_t sY=spriteData[8].y-4; // Sprite is always 1 above tile alignment due to scroll position
   uint16_t bufferRow=(BYTES_PER_BUFFER_LINE*(sY>>3));
@@ -633,7 +633,7 @@ void gameLoop(){
             cursorY=0;
           }
         }else if(giy==1){
-          drawMenu(gameHeader.optionText,40,14,16);
+          drawMenu(40,14,16);
           if((PRESSING_JUMP || PRESSING_LEFT || PRESSING_RIGHT) && ((gameFlags&GF_JUMP_LOCKOUT)==0)){
             switch(cursorY){
               case 0:

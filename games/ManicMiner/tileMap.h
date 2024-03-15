@@ -41,7 +41,7 @@ void drawBigNumber(uint8_t x,uint8_t y,uint16_t num){
   for(uint8_t n=0;n<6;n++){
     uint8_t d=(num%10)<<2;
     num/=10;
-    uint8_t *s=gameHeader.bigFontMap+d;
+    const uint8_t *s=gameHeader.bigFontMap+d;
     *p++=fontIX+pgm_read_byte(s++);
     *p++=fontIX+pgm_read_byte(s++);
     *(p+BYTES_PER_BUFFER_LINE-2)=fontIX+pgm_read_byte(s++);
@@ -62,7 +62,7 @@ void drawLives(){
   }
 }
 
-void drawText(uint8_t x, uint8_t y, uint8_t *txt, uint8_t len){
+void drawText(uint8_t x, uint8_t y, const uint8_t *txt, uint8_t len){
   uint8_t *p=screenRam+(x+(y*BYTES_PER_BUFFER_LINE));
   uint8_t fontIX=pgm_read_byte(&gameHeader.fontIX);
   while(len--){
@@ -278,7 +278,7 @@ void animateTiles(){
     }
 
     if(level==19){
-      uint8_t *p=gameHeader.sunLayout+(sunFrame*32);
+      const uint8_t *p=gameHeader.sunLayout+(sunFrame*32);
 
       for(uint8_t y=0;y<4;y++){
         for(uint8_t x=0;x<8;x++){

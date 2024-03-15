@@ -84,7 +84,7 @@ AudioType audioType=muted;
 GameState gameState=idle;
 uint8_t giu,giv,giw,gix,giy,giz;  // General purpose registers for game
 
-volatile uint8_t spriteLine[BYTES_PER_RASTER+2]__attribute__((aligned(32))) ={0};
+volatile uint8_t spriteLine[BYTES_PER_RASTER+2]__attribute__((aligned(64))) ={0};
 
 // y,x,defIX
 SpriteData spriteData[NUM_SPRITES]={

@@ -82,6 +82,7 @@
 #define PRESSING_RIGHT        ((keyState.current&BUTTON_RIGHT)==0)
 #define PRESSING_UP           ((keyState.current&BUTTON_UP)==0)
 #define PRESSING_DOWN         ((keyState.current&BUTTON_DOWN)==0)
+#define NOTHING_PRESSED       (keyState.current==0x3f)
 
 #define WANT_TO_MOVE_RIGHT    (gameFlags2&GF2_WANT_MOVE_RIGHT)
 #define WANT_TO_MOVE_LEFT     ((gameFlags2&GF2_WANT_MOVE_RIGHT)==0)
