@@ -18,7 +18,6 @@
 
 void drawNumber(uint8_t x, uint8_t y, uint16_t num){
   uint8_t *p=screenRam+(x+(y*BYTES_PER_BUFFER_LINE))+5;
-  uint8_t fontIX=pgm_read_byte(&gameHeader.fontIX);
   for(uint8_t n=0;n<6;n++){
     *p--=(fontIX+(num%10));
     num/=10;
@@ -27,7 +26,6 @@ void drawNumber(uint8_t x, uint8_t y, uint16_t num){
 
 void drawBits(uint8_t x, uint8_t y, uint8_t num){
   uint8_t *p=screenRam+(x+(y*BYTES_PER_BUFFER_LINE))+8;
-  uint8_t fontIX=pgm_read_byte(&gameHeader.fontIX);
   for(uint8_t n=0;n<8;n++){
     *p--=(fontIX+(num&1));
     num>>=1;
@@ -36,24 +34,22 @@ void drawBits(uint8_t x, uint8_t y, uint8_t num){
 
 void drawBigNumber(uint8_t x,uint8_t y,uint16_t num){
   uint8_t *p=screenRam+(x+(y*BYTES_PER_BUFFER_LINE))+(5*2);
-  uint8_t fontIX=pgm_read_byte(&gameHeader.bigFontIX);
   // bigFontMap
   for(uint8_t n=0;n<6;n++){
     uint8_t d=(num%10)<<2;
     num/=10;
     const uint8_t *s=gameHeader.bigFontMap+d;
-    *p++=fontIX+pgm_read_byte(s++);
-    *p++=fontIX+pgm_read_byte(s++);
-    *(p+BYTES_PER_BUFFER_LINE-2)=fontIX+pgm_read_byte(s++);
-    *(p+BYTES_PER_BUFFER_LINE-1)=fontIX+pgm_read_byte(s);
+    *p++=bigFontIX+pgm_read_byte(s++);
+    *p++=bigFontIX+pgm_read_byte(s++);
+    *(p+BYTES_PER_BUFFER_LINE-2)=bigFontIX+pgm_read_byte(s++);
+    *(p+BYTES_PER_BUFFER_LINE-1)=bigFontIX+pgm_read_byte(s);
     p-=4;
   }
 }
 
 void drawLives(){
   uint8_t *p=screenRam+((28*BYTES_PER_BUFFER_LINE)+13);
-  uint8_t fontIX=pgm_read_byte(&gameHeader.bigFontIX);
-  uint8_t ix=fontIX+32+(((currentFrame>>3)&0x01)*4);
+  uint8_t ix=bigFontIX+32+(((currentFrame>>3)&0x01)*4);
   for(uint8_t n=0;n<lives-1;n++){
     *p++=ix;
     *p++=ix+1;
@@ -64,7 +60,6 @@ void drawLives(){
 
 void drawText(uint8_t x, uint8_t y, const uint8_t *txt, uint8_t len){
   uint8_t *p=screenRam+(x+(y*BYTES_PER_BUFFER_LINE));
-  uint8_t fontIX=pgm_read_byte(&gameHeader.fontIX);
   while(len--){
     *p++=(pgm_read_byte(txt++)+fontIX);
   }
@@ -140,7 +135,6 @@ void drawAirBar(){
 void drawAirBarUI(){
   drawOutline(0,1,1);
   uint8_t *p=screenRam+(1*BYTES_PER_BUFFER_LINE)+1;
-  uint8_t fontIX=pgm_read_byte(&gameHeader.fontIX);
   *p++=(fontIX+12+'A'-'A');
   *p++=(fontIX+12+'I'-'A');
   *p++=(fontIX+12+'R'-'A');
@@ -213,7 +207,6 @@ void animateTiles(){
   
   uint8_t *p=screenRam+(BYTES_PER_BUFFER_LINE*(4+(level==19?8:0)));
   uint16_t len=(BYTES_PER_BUFFER_LINE*(level==19?8:16));
-//  for(uint16_t n=0;n<len;n++){
   while(len--){
     if(*p<cE && *p>=cS){
       uint8_t a=( (*p) + (levelFlags&(1<<5)?-1:1) )&0x07;
@@ -227,13 +220,12 @@ void animateTiles(){
     
     uint8_t pT=pgm_read_byte(gameLevel[level].tileIX+8);
     uint8_t bT=pgm_read_byte(gameLevel[level].tileIX+0);
-    uint8_t ascii=pgm_read_byte(&gameHeader.fontIX);
     uint8_t keysLeft=0;
     
     for(uint8_t n=0;n<5;n++){
       if(pickup[n]){
         ++keysLeft;
-        if(screenRam[pickup[n]]==ascii+39){
+        if(screenRam[pickup[n]]==fontIX+39){
           screenRam[pickup[n]]=bT;
           pickup[n]=0;
         }else if(screenRam[pickup[n]]==255){

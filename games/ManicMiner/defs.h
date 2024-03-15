@@ -21,10 +21,11 @@
 
 #define START_LEVEL           0
 #define START_LIVES           3
+
+// Here be cheats...
 //#define DISABLE_SPRITE_COLLISION
 //#define DISABLE_NASTY_COLLISION
 //#define DISABLE_COLLECT_PICKUPS
-
 
 #define BUTTON_B              (1<<5)
 #define BUTTON_A              (1<<4)
@@ -82,7 +83,7 @@
 #define PRESSING_RIGHT        ((keyState.current&BUTTON_RIGHT)==0)
 #define PRESSING_UP           ((keyState.current&BUTTON_UP)==0)
 #define PRESSING_DOWN         ((keyState.current&BUTTON_DOWN)==0)
-#define NOTHING_PRESSED       (keyState.current==0x3f)
+#define NOTHING_PRESSED       (keyState.current==0xff)
 
 #define WANT_TO_MOVE_RIGHT    (gameFlags2&GF2_WANT_MOVE_RIGHT)
 #define WANT_TO_MOVE_LEFT     ((gameFlags2&GF2_WANT_MOVE_RIGHT)==0)

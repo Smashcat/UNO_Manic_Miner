@@ -291,7 +291,6 @@ void doScroller(){
   if((giw%4)==0){
     uint8_t ix=(giw/4)*3;
     unpackBytes(scrollBuff, NULL, gameHeader.demoModeText+ix, 4, 6);
-    uint8_t fontIX=pgm_read_byte(&gameHeader.fontIX);
     for(uint8_t n=0;n<4;n++){
       scrollBuff[n]+=fontIX;
     }
@@ -362,7 +361,6 @@ void drawMenu(uint8_t len, uint8_t xPos, uint8_t yPos){
     }
   }
 
- //if(!PRESSING_UP && !PRESSING_DOWN && !PRESSING_LEFT && !PRESSING_RIGHT && !PRESSING_JUMP){
   if(NOTHING_PRESSED){
     gameFlags&=~GF_JUMP_LOCKOUT;
   }else{

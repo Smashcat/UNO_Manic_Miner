@@ -47,6 +47,8 @@ void unpackBytes(uint8_t *dst, const uint8_t *conversionTable, const uint8_t *sr
 void initHardware(){
 
   spriteDefRef=spriteDef+0;
+  fontIX=pgm_read_byte(&gameHeader.fontIX);
+  bigFontIX=pgm_read_byte(&gameHeader.bigFontIX);
   clearScreen(0,32,190);
   setTileRowSplit(224);
   loadHi(); // Load from EEPROM before we start the video output, as we steal some of the EEPROM registers for use in the rendering code - we can still store to EEPROM, but need to ensure there is no clash :)
@@ -66,11 +68,9 @@ void initHardware(){
   TCCR0B = _BV(WGM22) | _BV(CS01) | _BV(CS00);
 
   // Configure input pins
-  //DDRC=0;         // All inputs - this is the default at boot
   PORTC=0b111111; // pullups enabled
-  // DDRD&=~((1<<2)|(1<<0));  // Start button on D0, Option button on D2 - this is the default at boot
-  PORTD|=((1<<2)|(1<<0));  // Pullups enabled
-  
+  PORTD|=(1<<2);     // Option button on D2
+  PORTB|=(1<<0);     // Start button on B0
   // configure USART as master SPI mode 0, MSB first, 8MHz
   UCSR0A = _BV(U2X0); // double speed
   UCSR0B = _BV(TXEN0);

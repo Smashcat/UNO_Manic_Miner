@@ -76,6 +76,8 @@ uint8_t restoreFontLine=0;
 uint8_t altFontIX=1;
 uint8_t sunFrame=0;
 uint8_t cursorY=0;
+uint8_t fontIX=0;
+uint8_t bigFontIX=0;
 uint8_t startLevel=START_LEVEL;
 
 KeyState keyState;
