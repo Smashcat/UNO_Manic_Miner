@@ -1798,11 +1798,6 @@ Q2 = NPN</text>
 <label x="218.44" y="172.72" size="0.762" layer="95" xref="yes"/>
 <pinref part="B4" gate="G$1" pin="3"/>
 </segment>
-<segment>
-<wire x1="276.86" y1="175.26" x2="279.4" y2="175.26" width="0.1524" layer="91"/>
-<label x="276.86" y="175.26" size="0.762" layer="95" rot="R180" xref="yes"/>
-<pinref part="U$3" gate="G$1" pin="DATA"/>
-</segment>
 </net>
 <net name="BUT_A" class="0">
 <segment>
@@ -1815,11 +1810,6 @@ Q2 = NPN</text>
 <label x="236.22" y="187.96" size="0.762" layer="95" xref="yes"/>
 <pinref part="B3" gate="G$1" pin="3"/>
 </segment>
-<segment>
-<wire x1="276.86" y1="177.8" x2="279.4" y2="177.8" width="0.1524" layer="91"/>
-<label x="276.86" y="177.8" size="0.762" layer="95" rot="R180" xref="yes"/>
-<pinref part="U$3" gate="G$1" pin="LATCH"/>
-</segment>
 </net>
 <net name="BUT_DOWN" class="0">
 <segment>
@@ -1831,11 +1821,6 @@ Q2 = NPN</text>
 <wire x1="109.22" y1="170.18" x2="106.68" y2="170.18" width="0.1524" layer="91"/>
 <label x="109.22" y="170.18" size="0.762" layer="95" xref="yes"/>
 <pinref part="B8" gate="G$1" pin="3"/>
-</segment>
-<segment>
-<wire x1="276.86" y1="180.34" x2="279.4" y2="180.34" width="0.1524" layer="91"/>
-<label x="276.86" y="180.34" size="0.762" layer="95" rot="R180" xref="yes"/>
-<pinref part="U$3" gate="G$1" pin="CLOCK"/>
 </segment>
 </net>
 <net name="BUT_UP" class="0">
@@ -2056,6 +2041,42 @@ Q2 = NPN</text>
 <wire x1="256.54" y1="53.34" x2="325.12" y2="53.34" width="0.1524" layer="91"/>
 <wire x1="325.12" y1="53.34" x2="325.12" y2="142.24" width="0.1524" layer="91"/>
 <wire x1="325.12" y1="142.24" x2="256.54" y2="142.24" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="NES_DATA" class="0">
+<segment>
+<wire x1="276.86" y1="175.26" x2="279.4" y2="175.26" width="0.1524" layer="91"/>
+<label x="276.86" y="175.26" size="0.762" layer="95" rot="R180" xref="yes"/>
+<pinref part="U$3" gate="G$1" pin="DATA"/>
+</segment>
+<segment>
+<wire x1="134.62" y1="83.82" x2="137.16" y2="83.82" width="0.1524" layer="91"/>
+<label x="134.62" y="83.82" size="0.762" layer="95" rot="R180" xref="yes"/>
+<pinref part="U$2" gate="G$1" pin="D13"/>
+</segment>
+</net>
+<net name="NES_LATCH" class="0">
+<segment>
+<wire x1="134.62" y1="86.36" x2="137.16" y2="86.36" width="0.1524" layer="91"/>
+<label x="134.62" y="86.36" size="0.762" layer="95" rot="R180" xref="yes"/>
+<pinref part="U$2" gate="G$1" pin="D12"/>
+</segment>
+<segment>
+<wire x1="276.86" y1="177.8" x2="279.4" y2="177.8" width="0.1524" layer="91"/>
+<label x="276.86" y="177.8" size="0.762" layer="95" rot="R180" xref="yes"/>
+<pinref part="U$3" gate="G$1" pin="LATCH"/>
+</segment>
+</net>
+<net name="NES_CLOCK" class="0">
+<segment>
+<wire x1="276.86" y1="180.34" x2="279.4" y2="180.34" width="0.1524" layer="91"/>
+<label x="276.86" y="180.34" size="0.762" layer="95" rot="R180" xref="yes"/>
+<pinref part="U$3" gate="G$1" pin="CLOCK"/>
+</segment>
+<segment>
+<wire x1="134.62" y1="91.44" x2="137.16" y2="91.44" width="0.1524" layer="91"/>
+<label x="134.62" y="91.44" size="0.762" layer="95" rot="R180" xref="yes"/>
+<pinref part="U$2" gate="G$1" pin="D10"/>
 </segment>
 </net>
 </nets>
