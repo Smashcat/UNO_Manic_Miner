@@ -19,13 +19,42 @@
 #ifndef __MM_TYPES
 #define __MM_TYPES
 
+// The level the menu defaults to on startup - you can change level from the menu
 #define START_LEVEL           0
+
+// 3 lives is standard. More than 4 will overwrite the high-score in the UI
 #define START_LIVES           3
 
-// Here be cheats...
+// If using NES controller, set this to 1, otherwise 0 for normal buttons. If you want to connect a controller to the
+// header pins, then use the defines beginning with "NES_" below. These are all on the C port (analog pins on the UNO)
+#define USE_CONTROLLER        0
+
+// Here be cheats. Uncommenting these will make things significantly easier :-)
 //#define DISABLE_SPRITE_COLLISION
 //#define DISABLE_NASTY_COLLISION
 //#define DISABLE_COLLECT_PICKUPS
+
+
+
+// Nothing else should be changed from here down, unless you want to change input pins, or modify code etc.
+
+
+#if USE_CONTROLLER
+
+#define BUTTON_RIGHT          (1<<0)
+#define BUTTON_LEFT           (1<<1)
+#define BUTTON_DOWN           (1<<2)
+#define BUTTON_UP             (1<<3)
+#define BUTTON_START          (1<<4)
+#define BUTTON_OPTION         (1<<5)
+#define BUTTON_B              (1<<6)
+#define BUTTON_A              (1<<7)
+
+#define NES_DATA              5
+#define NES_LATCH             4
+#define NES_CLOCK             2
+
+#else
 
 #define BUTTON_B              (1<<5)
 #define BUTTON_A              (1<<4)
@@ -35,6 +64,8 @@
 #define BUTTON_LEFT           (1<<0)
 #define BUTTON_START          (1<<6)
 #define BUTTON_OPTION         (1<<7)
+
+#endif
 
 //bit 0 = can go right, bit 1 = can go left, bit 2 = in air, bit 3 = can jump
 #define CAN_MOVE_RIGHT        (1<<0)

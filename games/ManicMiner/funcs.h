@@ -51,13 +51,7 @@ void initHardware(){
   bigFontIX=pgm_read_byte(&gameHeader.bigFontIX);
   clearScreen(0,32,190);
   setTileRowSplit(224);
-  loadHi(); // Load from EEPROM before we start the video output, as we steal some of the EEPROM registers for use in the rendering code - we can still store to EEPROM, but need to ensure there is no clash :)
-
-  // prime pixel suppressor - when Pin is switched to output, it will force BLACK
-  // DDRD&=~(1<<PIN_SUPPRESS); - input is the default
-  // PORTD&=~(1<<PIN_SUPPRESS); - low is teh default
-  
-  setAudioType(muted);
+  loadHi(); // Load from EEPROM before we start the video output, as we steal some of the EEPROM registers for use in the rendering code - we can still store to EEPROM, but need to ensure there is no clash :)  
 
   // Set timer 2 for PWM output on D11 (PORTB bit 3)
   TCCR2A = _BV(COM2A0) | _BV(COM2B1) | _BV(WGM21) | _BV(WGM20);
@@ -67,10 +61,21 @@ void initHardware(){
   TCCR0A = _BV(COM2A0) | _BV(COM2B1) | _BV(WGM01) | _BV(WGM00);
   TCCR0B = _BV(WGM22) | _BV(CS01) | _BV(CS00);
 
-  // Configure input pins
+#if USE_CONTROLLER
+
+  // Configure pins for clocking data from NES controller
+  PORTC=((1<<NES_DATA)|(1<<NES_CLOCK));
+  DDRC=((1<<NES_LATCH)|(1<<NES_CLOCK));
+
+#else
+
+  // Configure input pins for buttons
   PORTC=0b111111; // pullups enabled
   PORTD|=(1<<2);     // Option button on D2
   PORTB|=(1<<0);     // Start button on B0
+
+#endif
+
   // configure USART as master SPI mode 0, MSB first, 8MHz
   UCSR0A = _BV(U2X0); // double speed
   UCSR0B = _BV(TXEN0);

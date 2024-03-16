@@ -22,9 +22,27 @@
 // First 6 inputs are on PORTC, Option on PORTD2, Start on PORTD0
 uint8_t readInput(){
   keyState.last=keyState.current;
+
+#if USE_CONTROLLER
+
+  PORTC|=(1<<NES_LATCH);
+  PORTC&=~(1<<NES_LATCH);
+  for(uint8_t n=0;n<8;n++){
+    PORTC&=~(1<<NES_CLOCK);
+    keyState.current<<=1;
+    uint8_t i=PINC>>NES_DATA;
+    keyState.current+=( i & 0x01 );
+    PORTC|=(1<<NES_CLOCK);
+  }
+
+#else
+
   keyState.current=PINC&0x3f;
   keyState.current|=((PINB&(1<<0))<<6); // Option button on PORTB
   keyState.current|=((PIND&(1<<2))<<5); // Start button on PORTD
+
+#endif
+
   keyState.changed=(keyState.current^keyState.last);
   return keyState.changed;
 }
