@@ -64,8 +64,8 @@ void initHardware(){
 #if USE_CONTROLLER
 
   // Configure pins for clocking data from NES controller
-  PORTC=((1<<NES_DATA)|(1<<NES_CLOCK));
-  DDRC=((1<<NES_LATCH)|(1<<NES_CLOCK));
+  PORTB=((1<<NES_DATA)|(1<<NES_CLOCK));
+  DDRB=((1<<NES_LATCH)|(1<<NES_CLOCK));
 
 #else
 

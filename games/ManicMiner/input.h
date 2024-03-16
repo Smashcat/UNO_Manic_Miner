@@ -25,14 +25,14 @@ uint8_t readInput(){
 
 #if USE_CONTROLLER
 
-  PORTC|=(1<<NES_LATCH);
-  PORTC&=~(1<<NES_LATCH);
+  PORTB|=(1<<NES_LATCH);
+  PORTB&=~(1<<NES_LATCH);
   for(uint8_t n=0;n<8;n++){
-    PORTC&=~(1<<NES_CLOCK);
+    PORTB&=~(1<<NES_CLOCK);
     keyState.current<<=1;
-    uint8_t i=PINC>>NES_DATA;
+    uint8_t i=PINB>>NES_DATA;
     keyState.current+=( i & 0x01 );
-    PORTC|=(1<<NES_CLOCK);
+    PORTB|=(1<<NES_CLOCK);
   }
 
 #else

@@ -26,7 +26,7 @@
 #define START_LIVES           3
 
 // If using NES controller, set this to 1, otherwise 0 for normal buttons. If you want to connect a controller to the
-// header pins, then use the defines beginning with "NES_" below. These are all on the C port (analog pins on the UNO)
+// header pins, then use the defines beginning with "NES_" below. These are all on the B port (add 8 to each one to find its "D" number on the UNO board)
 #define USE_CONTROLLER        0
 
 // Here be cheats. Uncommenting these will make things significantly easier :-)
