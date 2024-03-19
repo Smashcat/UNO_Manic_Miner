@@ -12,7 +12,7 @@ I have also linked sources I used for the NES controller and port that can be so
 
 [<img src="./images/3d-1.0.png?raw=true">](./images/3d-1.0.png)
 
-![Render](./images/schematic-1.0.png?raw=true)
+[<img src="./images/schematic-1.0.png?raw=true">](./images/schematic-1.0.png)
 
 ## NES port compatible with the PCB:
 [<img src="./images/NES-port.png?raw=true">](https://www.aliexpress.com/item/1005005992081986.html)
