@@ -17,7 +17,7 @@ I have also linked sources I used for the NES controller and port that can be so
 ## NES port compatible with the PCB:
 [<img src="./images/NES-port.png?raw=true">](https://www.aliexpress.com/item/1005005992081986.html)
 
-## NES controller (aftermarket) - make sure you pick the NES PAD version, NOT the USB version!:
+## NES controller (aftermarket) - make sure you pick the "nes white" or "nes grey" version, NOT the "classic mini" version!:
 [<img src="./images/controller.png?raw=true">](https://www.aliexpress.com/item/1005004988157136.html)
 
 ## 3-pin 3.5mm jack to 2xRCA male cable:
