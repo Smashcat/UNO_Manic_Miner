@@ -10,7 +10,7 @@ This folder contains the files for the PCB that can be used with this project.
 
 I have also linked sources I used for the NES controller and port that can be soldered to the PCB, below.
 
-![Render](./images/3d-1.0.png?raw=true)
+[<img src="./images/3d-1.0.png?raw=true">](./images/3d-1.0.png)
 
 ![Render](./images/schematic-1.0.png?raw=true)
 
