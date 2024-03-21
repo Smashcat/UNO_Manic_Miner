@@ -38,7 +38,7 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 
 ## Screen-shots:
 
-# CRT monitor:
+### CRT monitor:
 
 ![Render](./images/1.jpg?raw=true)
 
@@ -51,10 +51,15 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 ![Render](./images/5.jpg?raw=true)
 
 
-# TFT TV screen:
+### TFT TV screen:
 
 ![Render](./images/6.png?raw=true)
 
 ![Render](./images/7.png?raw=true)
+
+### PCB shield with NES controller
+
+![Render](./images/console-setup.JPG?raw=true)
+
 
 
