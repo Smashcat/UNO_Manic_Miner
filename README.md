@@ -59,7 +59,7 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 
 ### PCB shield with NES controller
 
-![Render](./images/console-setup.JPG?raw=true)
+![Render](./images/console-setup.jpg?raw=true)
 
 
 
