@@ -61,6 +61,9 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 
 ![Render](./images/8.png?raw=true)
 
+![Render](./images/9.jpg?raw=true)
+
+![Render](./images/10.jpg?raw=true)
 
 ### TFT TV screen:
 
