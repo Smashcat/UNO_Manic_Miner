@@ -1,0 +1,7 @@
+#line 1 "C:\\Users\\ScottPorter\\Documents\\git projects\\ManicMinerForArduinoUNO\\games\\Space Invaders\\SpaceInvaders\\.vscode\\arduino.json"
+{
+    "board": "arduino:avr:uno",
+    "sketch": "SpaceInvaders.ino",
+    "output": "./build",
+    "port": "COM7"
+}

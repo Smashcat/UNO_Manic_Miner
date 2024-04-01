@@ -1,7 +1,7 @@
-# Arduino UNO Manic Miner
-Manic Miner on the Arduino UNO with composite output
+# Arduino UNO Game Engine
+Manic Miner and Space Invaders on the Arduino UNO with composite output
 
-This is a project to demonstrate the use of my game engine, with a port of Manic Miner, originally for the ZX Spectrum, by Matthew Smith. Please note that this is for the original Arduino UNO with the ATMega328P microcontroller - it will not work on any other versions of the Arduino. Also, some of the cheaper "Arduino compatible" boards use resonators instead of crystals for their clock. These are nowhere near accurate enough to generate the video signal. I have tried several and it caused extreme jitter in the image. If you can, use an official Arduino, or at least a board with a proper 16Mhz crystal!!
+This is a project to demonstrate the use of my game engine, with a port of Manic Miner, originally for the ZX Spectrum, by Matthew Smith, and the original Space Invaders arcade machine. Please note that this is for the original Arduino UNO with the ATMega328P microcontroller - it will not work on any other versions of the Arduino. Also, some of the cheaper "Arduino compatible" boards use resonators instead of crystals for their clock. These are nowhere near accurate enough to generate the video signal. I have tried several and it caused extreme jitter in the image. If you can, use an official Arduino, or at least a board with a proper 16Mhz crystal!!
 
 
 ## Engine Features:
@@ -21,7 +21,7 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 + All files for PCB, including production files ready to place a fully assembled order (except for the NES port and header pins) from JLCPCB. Cost including delivery per board for 20 fully assembled boards seems to be around £4 for me in the UK.
 
 
-## Game Features:
+## Manic Miner Game Features:
 
 + All 20 original levels
 + All "special" boss and other mechanics. Including Eugene, the Kong Beast, Skylab crashing enemies and Solar Generator beam
@@ -31,9 +31,18 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 + Special end screen and message if you complete the game!
 
 
+## Space Invaders Game Features:
+
++ Pixel perfect recreation of original graphics
++ Gameplay logic matches the original game
++ Persistant high score (can be reset by holding Option+Start at boot)
++ 2 Channel Audio
+
+
 ## YouTube:
  
 [![Manic Miner on Arduino UNO](https://img.youtube.com/vi/dm_dUSeIqC4/0.jpg)](https://www.youtube.com/watch?v=dm_dUSeIqC4)
+[![Manic Miner on Arduino UNO](https://img.youtube.com/vi/EYmaM6yEfL8/0.jpg)](https://www.youtube.com/watch?v=EYmaM6yEfL8)
 
 
 ## Screen-shots:
@@ -50,12 +59,15 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 
 ![Render](./images/5.jpg?raw=true)
 
+![Render](./images/8.png?raw=true)
+
 
 ### TFT TV screen:
 
 ![Render](./images/6.png?raw=true)
 
 ![Render](./images/7.png?raw=true)
+
 
 ### PCB shield with NES controller
 
