@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:uno",
+    "sketch": "BasicScrollingTilemap.ino",
+    "output": "./build",
+    "port": "COM7"
+}
