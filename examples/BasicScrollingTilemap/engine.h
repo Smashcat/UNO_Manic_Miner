@@ -76,6 +76,8 @@ SpriteData spriteData[NUM_SPRITES]={0};
 ProcessedSprite processedSprite[NUM_SPRITES]={0};
 uint8_t screenRam[SCREEN_RAM_SIZE]={0};
 
+
+
 // Declarations
 void engineSetup();
 void setPWMChannel(const uint8_t ix, const uint8_t isOn);
@@ -89,6 +91,9 @@ void setSpriteDef(uint8_t ix, uint8_t defIX);
 void setTileRowSplit(uint16_t x);
 void setScroll(uint8_t x, uint8_t y);
 void clearTileMap(const uint8_t charIX);
+void shiftTiles(int8_t offset,uint8_t fillTile);
+
+
 
 // Implementations
 
@@ -100,22 +105,22 @@ ISR(TIMER1_OVF_vect){
 		scanline=0;
 	}else if(scanline==8){
 		OCR1A = 74; // scan lines 8 - 311 have short 4.7us sync pulses
+    #if USE_MASK
+    OCR1B = LEFT_EDGE+((7-(hScroll&0x07))*2);
+    #endif
 	}else if(scanline==TOP_EDGE){
     // Start interrupt to output pixels. Enabling interrupt causes it to fire immediately, 
     // so we use the first trigger to set up variables for rendering to display
-    #if USE_MASK
-    OCR1B = LEFT_EDGE+(hScroll*2); // Used for "hardware" horizontal scrolling if enabled (not used in this game)
-    #endif
 		TIMSK1 |= _BV(OCIE1B);
 	}
 }
 
 // Only called for initial frame setup scanline (not drawn), then active scanlines
 ISR(TIMER1_COMPB_vect) {
-	uint16_t tcnt = TCNT1; // capture timer to allow jitter correction
 	static int8_t slice;
   static uint8_t screenRamRow;
-	
+	static uint8_t hSoff;
+	uint16_t tcnt = TCNT1-hSoff; // capture timer to allow jitter correction - need to also offset the hScroll position, as it's added to the timer counter!
 	if(scanline==TOP_EDGE) { // on stored-up 'false trigger' scanline, initialize the pointers etc
 		slice=(vScroll&0x07);
     screenRamRow=tileRowStart+((vScroll>>3)%(CHARACTER_ROWS-tileRowStart));
@@ -123,6 +128,7 @@ ISR(TIMER1_COMPB_vect) {
 		fontSlice = tileData+(slice*256); // point to slice before first (top) slice of font pixels (top pixel of each 10 is just RVS cap)
     displayLine=(scanline-TOP_EDGE)+1;
     collisionBits=0;  // Reset collisionBit flag register
+    hSoff=((7-(hScroll&0x07))*2);
 	} else {
 		renderScanline(pScreenRam, fontSlice, tcnt, minTCNT);
     if (tcnt < minTCNT) 
@@ -134,7 +140,8 @@ ISR(TIMER1_COMPB_vect) {
         screenRamRow=0;
         pScreenRam=screenRam+(screenRamRow*BYTES_PER_BUFFER_LINE);
         #if USE_MASK
-        OCR1B = LEFT_EDGE-3;  // If horizontal scrolling in use, ensure scroll position is reset when lineCompare is triggered!
+        OCR1B = LEFT_EDGE;  // If horizontal scrolling in use, ensure scroll position is reset when lineCompare is triggered!
+        hSoff=0;
         hScrollSMask=0x7f>>(7-0);
         hScrollEMask=0xfe<<0;
         #endif
@@ -157,6 +164,7 @@ ISR(TIMER1_COMPB_vect) {
     }
   }
 }
+
 
 /**
  * @brief Initialise the engine. Sets up timers etc. After this, the video interrupt will be started and run continuously
@@ -371,16 +379,16 @@ void setTileRowSplit(uint16_t x){
 /**
  * @brief Set the scroll position in X and Y axis for the tilemap. This does not affect sprites
  * 
- * @param x Scroll position in x axis (pixels)
- * @param y Scroll position in y axie (pixels)
+ * @param x Scroll position in x axis (pixels - 0-255)
+ * @param y Scroll position in y axie (pixels - 0-255)
  */
 void setScroll(uint8_t x, uint8_t y){
-    hScroll=x;
     vScroll=y;
     #if USE_MASK==1
+    hScroll=x;
     uint8_t a=(uint8_t)(hScroll&0x07);
-    hScrollSMask=0x7f>>(7-a);
-    hScrollEMask=0xfe<<a;
+    hScrollSMask=0x7f>>a;
+    hScrollEMask=0xfe<<(7-a);
     #else
     hScrollSMask=0;
     hScrollEMask=0;
@@ -396,6 +404,48 @@ void clearTileMap(const uint8_t charIX){
   uint8_t *p=screenRam;
   for(uint16_t n=0;n<BYTES_PER_BUFFER_LINE*CHARACTER_ROWS;n++){
     *p++=charIX;
+  }
+}
+
+/**
+ * @brief Move all tiles in the tilemap left/right by x character places. Useful for horizontal scrolling
+ * 
+ * @param offset amount of tiles to shift, from -32 to 32
+ * @param fillTile The index of the tile to fill the blank space to the left/right after shifting tiles
+ */
+void shiftTiles(int8_t offset,uint8_t fillTile){
+  if(offset<0){
+    uint8_t *p=screenRam;
+    const uint8_t off=-offset;
+    for(uint8_t row=0;row<CHARACTER_ROWS;row++){
+      uint8_t shiftNum=BYTES_PER_BUFFER_LINE-off;
+      while(shiftNum){
+        *p=*(p+off);
+        ++p;
+        --shiftNum;
+      }
+      uint8_t blankNum=off;
+      while(blankNum){
+        *p++=fillTile;
+        --blankNum;
+      }
+    }
+  }else{
+    uint8_t *p=screenRam+(SCREEN_RAM_SIZE-1);
+    const uint8_t off=offset;
+    for(uint8_t row=0;row<CHARACTER_ROWS;row++){
+      uint8_t shiftNum=BYTES_PER_BUFFER_LINE-off;
+      while(shiftNum){
+        *p=*(p-off);
+        --p;
+        --shiftNum;
+      }
+      uint8_t blankNum=off;
+      while(blankNum){
+        *p--=fillTile;
+        --blankNum;
+      }
+    }
   }
 }
 

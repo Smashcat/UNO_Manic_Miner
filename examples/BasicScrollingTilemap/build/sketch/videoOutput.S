@@ -1,10 +1,10 @@
 #line 1 "C:\\Users\\ScottPorter\\Documents\\git projects\\ManicMinerForArduinoUNO\\examples\\BasicScrollingTilemap\\videoOutput.S"
 /*
  
- This file is part of Manic Miner for Arduino UNO.
+ This file is part of the Arduino UNO game engine.
  Copyright (C) 2024 Scott Porter
 
- Manic Miner for Arduino UNO is free software: you can redistribute it and/or modify
+ The Arduino UNO game engine is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by the Free Software 
  Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -92,7 +92,7 @@ processSprite:
   LDS R19,hScroll   // Horizontal scroll is a 16bit value, with lower 3 bits used as bit offset on display
   MOV R24,R19       // Duplicate into R24
   ANDI R24,0x07     // Keep the bottom 3 bits of X position to shift sprite data right in destination
-  SUB R18,R24       // Subtract horizontal scroll offset from sprite X
+  ADD R18,R24       // Add horizontal scroll offset from sprite X
   MOV R19,R18       // Duplicate into R19
   LSR R19           // Divide Sprite X pos by 8
   LSR R19
@@ -164,6 +164,12 @@ skipShift:
 
 
 
+
+
+/**
+ * This is where the current scanline is rasterised to the display
+ */
+
  .global renderScanline ; (*pScreenRam, *fontSlice, tcnt,   minTCNT)
  ;                       R25  R24     R23 R22    R21 R20 R19 R18
 
@@ -188,11 +194,7 @@ jitterFix2:
 	BRLO jitterFix3
  
 jitterFix3:
-	INC R18
-	CP R20, R18 ; compare tcnt with minTCNT+4
-	BRLO jitterFix4
- 
-jitterFix4:
+
 
   SUPPRESS  // Prevent UART initially sending a high signal to the output when its enabled by pulling the suppress pin low
 
@@ -200,7 +202,14 @@ jitterFix4:
   LDI R25, 0x08
 #if USE_MASK
   LDS R18,hScrollSMask;
+#else
+  LDI R18,0xFF
 #endif
+
+
+
+
+
 
   // Lots of loop unrolling here. We use almost all of the time in between loading the UART to get the data ready for the next byte, clearing the line-buffer,
   // and also preparing some data for the line-buffer generation after the tiles+previous line-buffer have all been sent to the display. There
@@ -212,11 +221,8 @@ jitterFix4:
   LPM R20, Z ; fetch 8 pixels                // +3 =  7
   LDS R24,spriteLine ; get lineBuffer byte   // +2 =  9
   OR R20, R24 ; OR the lineBuffer            // +1 = 10
-#if USE_MASK
   AND R20,R18 ; Mask off X pixels, based on the current hScroll offset
-#else
-  NOP
-#endif
+
   // R19:R18 pair free to use till R19 is set to zero
   
   STS UDR0, R20 ; send them to the USART     // +2 = 14
@@ -224,6 +230,7 @@ jitterFix4:
   LD R24, X+ ; get character from screen ram // +2 = 19 - had to swap things about to ensure UART kept fed!
   MOVW R30, R22 ; Z = fontSlice              // +1 = 20
   PUSH R29  ;// Store Y (high byte)
+
   STS UCSR0B, R25 ; enable USART transmit    // +2 = 16
 
   UNSUPPRESS                                 // +1 = 17
@@ -596,7 +603,7 @@ jitterFix4:
   LPM R18, Z ; fetch 8 pixels                // +3 = 54
   LDS R24,spriteLine+31 ; get lineBuffer byte //+2 =  9
   OR R18, R24 ; OR the lineBuffer            // +1 = 57
-  AND R18,R25                                // +1
+  AND R18,R25                                // +1  AND the end of line mask
   STS UDR0, R18 ; send them to the USART     // +2 = 61
   STS spriteLine+31,R19  ; Clear linebuffer  // +2
   ;// Quad block end
@@ -606,13 +613,13 @@ jitterFix4:
   // Note: The last pixel from a line MUST be LOW, otherwise analogue monitors will bleed across to right!
   // Can be avoided by also suppressing after about 26 clocks, but this wastes time...
 
-  MOVW R24,R28            ; Store pointer to start of processedSprite data to reset Y for each sprite
-
 
 ;===========================================
 ; Now get sprites ready for next scanline...
 ;===========================================
-  
+
+  MOVW R24,R28            ; Store pointer to start of processedSprite data to reset Y for each sprite
+
   ; 19,23,30,31 = Free
   ; 18    = holds the data row from the sprite to display (0-15) after initial check
   ; 22    = counter for sprite rendering

@@ -1,10 +1,10 @@
 #line 1 "C:\\Users\\ScottPorter\\Documents\\git projects\\ManicMinerForArduinoUNO\\examples\\BasicScrollingTilemap\\engineDefs.h"
 /*
  
- This file is part of Manic Miner for Arduino UNO.
+ This file is part of the Arduino UNO game engine.
  Copyright (C) 2024 Scott Porter
 
- Manic Miner for Arduino UNO is free software: you can redistribute it and/or modify
+ The Arduino UNO game engine is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by the Free Software 
  Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -85,7 +85,7 @@
 #define NOTHING_PRESSED       (keyState.current==0xff)
 
 // If zero, no horizontal scrolling code is included for the tilemap.
-#define USE_MASK        0
+#define USE_MASK        1
 
 // If any of these are 0, then sprite will overwrite sprites under it instead of ORing with them. Improves performance substantially for sprites that don't overlap!
 // Sprites are always ORd with the background tiles no matter what this is set to

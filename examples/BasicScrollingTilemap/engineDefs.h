@@ -84,7 +84,7 @@
 #define NOTHING_PRESSED       (keyState.current==0xff)
 
 // If zero, no horizontal scrolling code is included for the tilemap.
-#define USE_MASK        0
+#define USE_MASK        1
 
 // If any of these are 0, then sprite will overwrite sprites under it instead of ORing with them. Improves performance substantially for sprites that don't overlap!
 // Sprites are always ORd with the background tiles no matter what this is set to
