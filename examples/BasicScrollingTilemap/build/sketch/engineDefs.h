@@ -89,7 +89,10 @@
 
 // If any of these are 0, then sprite will overwrite sprites under it instead of ORing with them. Improves performance substantially for sprites that don't overlap!
 // Sprites are always ORd with the background tiles no matter what this is set to
-#define OR_SPRITE0      1
+// It's almost NEVER worth setting sprite0 to OR, as it's drawn first on an empty spriteline, so there's nothing to OR with. The only reason
+// it would be used, would be if something custom was being done in the videoOutput routines. So, if in doubt leave OR_SPRITE0 set to 0! :)
+// Sprite 8 (if used) is a special sprite that is always OR'd with the other sprites, as it also checks for collisions against other sprites.
+#define OR_SPRITE0      0
 #define OR_SPRITE1      1
 #define OR_SPRITE2      1
 #define OR_SPRITE3      1
@@ -99,7 +102,8 @@
 #define OR_SPRITE7      1
 
 // If set to 0, then sprite can only move in the vertical axis, or if moving horizontally, can only be 8 pixels wide, or will clip as it moves. Improves performance 
-// for games where some sprites are only 8 pixels or less wide
+// for games where some sprites are only 8 pixels or less wide.
+// As above, sprite 8 (if used) is a special type and cannot be set here.
 #define V_SPRITE0       1
 #define V_SPRITE1       1
 #define V_SPRITE2       1
@@ -129,6 +133,8 @@
 // and when it's stopped. 303 maximum to be on-screen on 7-inch monitor - you can subtract 1 here to hide the bottom row of tiles for smoother vertical scrolling
 #define BOTTOM_EDGE (TOP_EDGE + (CHARACTER_ROWS-1) * PIXELS_PER_CHARACTER)
 
+#define BOTTOM_DISPLAY_LINE (BOTTOM_EDGE- TOP_EDGE)
+
 #define PROCESSED_SPRITE_OFFSET     200
 
 // Audio base frequencies
@@ -140,5 +146,7 @@
 #define FREQ256                     ((1<<CS22)|(1<<CS21))
 #define FREQ1024                    ((1<<CS22)|(1<<CS21)|(1<<CS20))
 
+#define HSCROLL_S_RESET             (0x7f>>(7-0))
+#define HSCROLL_E_RESET             (0xfe<<0)
 
 #endif

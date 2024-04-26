@@ -27,9 +27,10 @@
 .equ GPIOR0, 0x1E
 .equ GPIOR1, 0x2A
 .equ GPIOR2, 0x2B
+
 .equ EEDR,   0x20
 .equ EEARL,  0x21
-.equ EEARH,  0x21
+.equ EEARH,  0x22
 .equ EECR,   0x1F
 
 #define UNSUPPRESS CBI  DDRD, PIN_SUPPRESS
@@ -167,11 +168,11 @@ skipShift:
 
 
 /**
- * This is where the current scanline is rasterised to the display
+ * This is where the current scanline is rasterised to the display, and also where sprites are rendered to the linebuffer for the next scanline
  */
 
- .global renderScanline ; (*pScreenRam, *fontSlice, tcnt,   minTCNT)
- ;                       R25  R24     R23 R22    R21 R20 R19 R18
+ .global renderScanline ; (*pScreenRam, *fontSlice)
+ ;                          R25  R24     R23 R22
 
  renderScanline:
 	; interrupt may jitter because of instructions taking 1, 2, 3 clock cycles
@@ -179,6 +180,9 @@ skipShift:
 	; this hack synchronizes the CPU with the tcnt value
 	; only checking the low byte here because interrupt should always occur earlier than 240 counts (15 us)
   
+  LDS R18,minTCNT
+  LDS R20,tcnt
+
 	INC R18
 	CP R20, R18 ; compare tcnt with minTCNT+1
 	BRLO jitterFix1 ; extra cycle if tcnt was lower
@@ -206,19 +210,14 @@ jitterFix3:
   LDI R18,0xFF
 #endif
 
-
-
-
-
-
   // Lots of loop unrolling here. We use almost all of the time in between loading the UART to get the data ready for the next byte, clearing the line-buffer,
-  // and also preparing some data for the line-buffer generation after the tiles+previous line-buffer have all been sent to the display. There
-  // are only 4 NOPs left which is obviously a TRAVESTY! but there is really nothing else I could use them for currently.
+  // and also preparing some data for the line-buffer generation after the tiles+previous line-buffer have all been sent to the display. 
   
   LD R24, X+ ; get character from screen ram // +2 =  2
   MOVW R30, R22 ; Z = fontSlice              // +1 =  3
   ADD R30, R24                               // +1 =  4
   LPM R20, Z ; fetch 8 pixels                // +3 =  7
+
   LDS R24,spriteLine ; get lineBuffer byte   // +2 =  9
   OR R20, R24 ; OR the lineBuffer            // +1 = 10
   AND R20,R18 ; Mask off X pixels, based on the current hScroll offset
@@ -250,6 +249,7 @@ jitterFix3:
   MOVW R30, R22 ; Z = fontSlice              // +1 = 36
   ADD R30, R24                               // +1 = 37
   LPM R18, Z ; fetch 8 pixels                // +3 = 40
+
   LDS R24,spriteLine+2 ; get lineBuffer byte // +2 =  9
   OR R18, R24 ; OR the lineBuffer            // +1 = 43
 
@@ -277,20 +277,19 @@ jitterFix3:
   LDS R24,spriteLine+4 ; get lineBuffer byte // +2 =  9
   OR R18, R24 ; OR the lineBuffer            // +1 = 10
 
-  NOP
-  NOP
+  LD R24, X+ ; get character from screen ram // +2 = 17
         
   STS UDR0, R18 ; send them to the USART     // +2 = 13
   
-  LD R24, X+ ; get character from screen ram // +2 = 17
   MOVW R30, R22 ; Z = fontSlice              // +1 = 18
   ADD R30, R24                               // +1 = 19
   LPM R18, Z ; fetch 8 pixels                // +3 = 22
   LDS R24,spriteLine+5 ; get lineBuffer byte // +2 =  9
   OR R18, R24 ; OR the lineBuffer            // +1 = 25
 
-  NOP
-  NOP
+  MOV  R16,R20
+  INC  R16
+  STS  displayLine,R16    ; Increment the display line and store for the next raster - no NOPs left!!!!
     
   STS UDR0, R18 ; send them to the USART     // +2 = 29
 
@@ -304,6 +303,7 @@ jitterFix3:
   LPM R18, Z ; fetch 8 pixels                // +3 = 40
   LDS R24,spriteLine+6 ; get lineBuffer byte // +2 =  9
   OR R18, R24 ; OR the lineBuffer            // +1 = 43
+
   STS UDR0, R18 ; send them to the USART     // +2 = 45
 
   OUT EEARL,R16            ;                                                                          +1 *
@@ -382,7 +382,9 @@ jitterFix3:
   LPM R18, Z ; fetch 8 pixels                // +3 =  7
   LDS R24,spriteLine+12 ; get lineBuffer byte // +2 =  9
   OR R18, R24 ; OR the lineBuffer            // +1 = 10
+
   STS spriteLine+12,R19  ; Clear linebuffer  // +2
+
   STS UDR0, R18 ; send them to the USART     // +2 = 13
 
   STS spriteLine+11,R19  ; Clear linebuffer  // +2
@@ -628,8 +630,6 @@ jitterFix3:
   ; 25:24 = Holds pointer to NEXT element in processedSprite data array
   ; 29:28 = pointer to processedSprite data (Y)
   ; 26:27 = points to displayLine to write line buffer (X)
-
-  MOVW R28,R24            ; Store pointer to start of processedSprite data to reset Y for each sprite
 
 #if NUM_SPRITES>0
 
@@ -914,6 +914,7 @@ notOnLine5:
   SUB  R18,R19             ; Check if sprite Y position is below current scanline (scanlineY-spriteY)
   CPI  R18,16              ; R18 is positive, so check if 16 pixels or less above scanline
   BRCC notOnLine6          ; 16 or more pixels, so it's not displayed 
+  
   LDD  R19,Y+1             ; sprite X position
   MOVW R26,R16             ; Load display line address into Z
   ADD  R26,R19             ; Add X position along display line
@@ -1002,14 +1003,14 @@ notOnLine7:
 
   ADIW R24,50
 
-  MOVW R28,R24             ; On last sprite, so reg 24:25 no longer used so can use them for collision detection
+  MOVW R28,R24             ; Load processed sprite data into Y
   MOV  R18,R20             ; move current scanline into R18
   LD   R19,Y               ; sprite Y position
   SUB  R18,R19             ; Check if sprite Y position is below current scanline (scanlineY-spriteY)
   CPI  R18,16              ; R18 is positive, so check if 16 pixels or less above scanline
   BRCC notOnLine8          ; 16 or more pixels, so it's not displayed 
   LDD  R19,Y+1             ; sprite X position
-  MOVW R26,R16             ; Load display line address into X reg, now 16:17 are no longer used
+  MOVW R26,R16             ; Load display line address into X reg
   ADD  R26,R19             ; Add X position along display line
   //ADC  R27,R21             ; So X is now the destination register ready to accept 3 bytes of sprite data
   ADD  R28,R18             ; Y now points to source position from processed sprite data  
@@ -1017,27 +1018,27 @@ notOnLine7:
 
   LDD  R19,Y+2             ; Load processed sprite data
   LD   R18,X               ; Load byte from current spriteline
-  MOV  R16,R19
-  OR   R19,R18
-  AND  R16,R18             ; Any bits set in R16 indicate a collision
-  ST   X+,R19              ; Store the result in the line buffer
-  
-  LDD  R19,Y+18            ; Load processed sprite data
-  LD   R18,X
-  MOV  R17,R19
-  OR   R19,R18
-  AND  R17,R18             ; Any bits set in R17 indicate a collision
-  ST   X+,R19              ; Store the result in the line buffer
-  
-  LDD  R19,Y+34            ; Load processed sprite data
-  LD   R18,X
   MOV  R24,R19
   OR   R19,R18
   AND  R24,R18             ; Any bits set in R24 indicate a collision
   ST   X+,R19              ; Store the result in the line buffer
+  
+  LDD  R19,Y+18            ; Load processed sprite data
+  LD   R18,X
+  MOV  R25,R19
+  OR   R19,R18
+  AND  R25,R18             ; Any bits set in R25 indicate a collision
+  OR   R24,R25             ; Add any collision bits to R24, to free up R17 for reuse
+  ST   X+,R19              ; Store the result in the line buffer
+  
+  LDD  R19,Y+34            ; Load processed sprite data
+  LD   R18,X
+  MOV  R25,R19
+  OR   R19,R18
+  AND  R25,R18             ; Any bits set in R25 indicate a collision
+  OR   R24,R25             ; Add any collision bits to R24, to free up R25 for reuse
+  ST   X+,R19              ; Store the result in the line buffer
 
-  OR   R24,R16             ; Any bits set in R24 now indicate a collision between sprite 8 and one of the sprites 0-7
-  OR   R24,R17
   LDS  R25,collisionBits
   OR   R24,R25
   STS  collisionBits,R24   ; Store in var so C can access
@@ -1045,6 +1046,16 @@ notOnLine7:
 #endif
 
 notOnLine8:
+
+  //if (tcnt < minTCNT) - jitter adjust
+  //      minTCNT = tcnt;
+  LDS  R18,minTCNT
+  LDS  R20,tcnt
+  CP   R20,R18
+  BRGE noTcntChange
+  STS minTCNT,R20
+
+noTcntChange:
 
   POP  R16
   POP  R17

@@ -44,7 +44,7 @@ typedef struct KeyState{
 } KeyState;
 
 extern "C" { void processSprite(ProcessedSprite *dest, const uint8_t *spriteDefRef, const SpriteData *spriteData); }
-extern "C" { void renderScanline(volatile uint8_t *pScreenRam, volatile const uint8_t *fontSlice, volatile uint16_t tcnt, volatile uint16_t minTCNT); }
+extern "C" { void renderScanline(volatile uint8_t *pScreenRam, volatile const uint8_t *fontSlice); }
 extern "C" { void loadHi(); }
 extern "C" { void storeHi(); }
 
@@ -60,14 +60,24 @@ volatile uint8_t displayLine=0;
 volatile uint8_t collisionBits=0; // This is set to non-zero if sprite at index 8 has collided with another sprite during the last frame (pixel based collision detection)
 volatile uint8_t *pScreenRam;
 volatile uint8_t spriteLine[BYTES_PER_RASTER+2]__attribute__((aligned(64))) ={0};
+volatile uint16_t tcnt;
 
 const uint8_t *spriteDefRef;  // ASM uses this pointer to the const sprite data array - this gives the possibility of bank switching sprites if there are more than 256 (unlikely as that is!)
 uint16_t hScroll=0;
 uint16_t vScroll=0;
 uint8_t tileRowStart=0;
-uint16_t lineCompare=600;     // Set using setTileRowSplit() below
-uint8_t hScrollSMask=0x0;
-uint8_t hScrollEMask=0x0;
+uint16_t topLineCompare=0;     // Set using setTileRowSplit() below
+uint16_t bottomLineCompare=600;     // Set using setTileRowSplit() below
+uint8_t hScrollSMask=0;
+uint8_t hScrollEMask=0;
+uint8_t hScrollSMaskReset=0;
+uint8_t hScrollEMaskReset=0;
+uint8_t hSoffReset=0;
+uint8_t ocr1bReset=0;
+uint8_t screenRamRowTopReset=0;
+uint8_t screenRamRowBottomReset=0;
+uint8_t *pScreenRamBottomReset;
+
 KeyState keyState;
 uint16_t hiScore=0;
 uint16_t waitFrames=0;
@@ -89,7 +99,7 @@ uint8_t readInput();
 void processSprites();
 void setSpritePos(uint8_t ix,uint8_t x, uint8_t y);
 void setSpriteDef(uint8_t ix, uint8_t defIX);
-void setTileRowSplit(uint16_t x);
+void setTileRowSplit(uint16_t topY, uint16_t bottomY);
 void setScroll(uint8_t x, uint8_t y);
 void clearTileMap(const uint8_t charIX);
 void shiftTiles(int8_t offset,uint8_t fillTile);
@@ -106,9 +116,6 @@ ISR(TIMER1_OVF_vect){
 		scanline=0;
 	}else if(scanline==8){
 		OCR1A = 74; // scan lines 8 - 311 have short 4.7us sync pulses
-    #if USE_MASK
-    OCR1B = LEFT_EDGE+((7-(hScroll&0x07))*2);
-    #endif
 	}else if(scanline==TOP_EDGE){
     // Start interrupt to output pixels. Enabling interrupt causes it to fire immediately, 
     // so we use the first trigger to set up variables for rendering to display
@@ -121,48 +128,101 @@ ISR(TIMER1_COMPB_vect) {
 	static int8_t slice;
   static uint8_t screenRamRow;
 	static uint8_t hSoff;
-	uint16_t tcnt = TCNT1-hSoff; // capture timer to allow jitter correction - need to also offset the hScroll position, as it's added to the timer counter!
+	tcnt = TCNT1-hSoff; // capture timer to allow jitter correction - need to also offset the hScroll position, as it's added to the timer counter!
+
 	if(scanline==TOP_EDGE) { // on stored-up 'false trigger' scanline, initialize the pointers etc
-		slice=(vScroll&0x07);
-    screenRamRow=tileRowStart+((vScroll>>3)%(CHARACTER_ROWS-tileRowStart));
+    displayLine=0;
+    
+    if(topLineCompare==displayLine){
+
+      #if USE_MASK
+        hScrollSMask=hScrollSMaskReset;
+        hScrollEMask=hScrollEMaskReset;
+        OCR1B = ocr1bReset;
+        hSoff=hSoffReset;
+      #else
+        hSoff=0;
+      #endif
+      slice=(vScroll&0x07);
+      screenRamRow=screenRamRowTopReset;
+
+    }else{
+
+      #if USE_MASK
+        OCR1B = LEFT_EDGE;  // If horizontal scrolling in use, ensure scroll position is reset when lineCompare is triggered!
+        hScrollSMask=255;//HSCROLL_S_RESET;
+        hScrollEMask=255; //HSCROLL_E_RESET;
+      #else
+        hSoff=0;
+      #endif
+      slice=0;
+      hSoff=0;
+      screenRamRow=0;
+    }
+
+    collisionBits=0;  // Reset collisionBit flag register
 		pScreenRam = screenRam+(screenRamRow*BYTES_PER_BUFFER_LINE); // point to first character (top left) in screenRam
 		fontSlice = tileData+(slice*256); // point to slice before first (top) slice of font pixels (top pixel of each 10 is just RVS cap)
-    displayLine=(scanline-TOP_EDGE)+1;
-    collisionBits=0;  // Reset collisionBit flag register
-    hSoff=((7-(hScroll&0x07))*2);
+    displayLine=1;
+
 	} else {
-		renderScanline(pScreenRam, fontSlice, tcnt, minTCNT);
-    if (tcnt < minTCNT) 
-      minTCNT = tcnt;
-    displayLine=(scanline-TOP_EDGE)+1;
-    if(displayLine==lineCompare){
-        slice = -1;
-        fontSlice=tileData-256;
-        screenRamRow=0;
-        pScreenRam=screenRam+(screenRamRow*BYTES_PER_BUFFER_LINE);
-        #if USE_MASK
+
+		renderScanline(pScreenRam, fontSlice);
+
+    if(displayLine==bottomLineCompare){ // Note that displayLine is incremented in the ASM routine...
+
+      slice = -1;
+      fontSlice=tileData-256;
+      screenRamRow=screenRamRowBottomReset;
+      pScreenRam=pScreenRamBottomReset;
+      
+      #if USE_MASK
         OCR1B = LEFT_EDGE;  // If horizontal scrolling in use, ensure scroll position is reset when lineCompare is triggered!
         hSoff=0;
-        hScrollSMask=0x7f>>(7-0);
-        hScrollEMask=0xfe<<0;
-        #endif
+        hScrollSMask=255;//HSCROLL_S_RESET;
+        hScrollEMask=255;//HSCROLL_E_RESET;
+      #endif
+
+    }else if(topLineCompare==displayLine){
+      #if USE_MASK
+        hScrollSMask=hScrollSMaskReset;
+        hScrollEMask=hScrollEMaskReset;
+        OCR1B = ocr1bReset;
+        //OCR1B = LEFT_EDGE+((7-(hScroll&0x07))*2);
+        hSoff=hSoffReset;
+        minTCNT+=hSoff;
+      #else
+        hSoff=0;
+      #endif
+      slice=(vScroll&0x07);
+      screenRamRow=screenRamRowTopReset;
+      //screenRamRow=tileRowStart+((vScroll>>3)%(CHARACTER_ROWS-tileRowStart));
+      pScreenRam = screenRam+(screenRamRow*BYTES_PER_BUFFER_LINE); // point to first character (top left) in screenRam
+		  fontSlice = tileData+(slice*256); // point to slice before first (top) slice of font pixels (top pixel of each 10 is just RVS cap)
     }
-    if (scanline == BOTTOM_EDGE) {
+
+    if(displayLine==BOTTOM_DISPLAY_LINE){
+      
         TIMSK1 &= ~_BV(OCIE1B); // we don't want any more COMPB interrupts this frame
         currentFrame++;
-    } else if(++slice==PIXELS_PER_CHARACTER){
+
+    }else if(++slice==PIXELS_PER_CHARACTER){
+
         slice = 0;
         fontSlice=tileData+0;
-        screenRamRow++;
-        if(screenRamRow==(CHARACTER_ROWS)){
+        if(++screenRamRow==CHARACTER_ROWS){
             screenRamRow=tileRowStart;
             pScreenRam=screenRam+(screenRamRow*BYTES_PER_BUFFER_LINE);
         }else{
             pScreenRam+=BYTES_PER_BUFFER_LINE;
         }
+
     } else {
+
         fontSlice += 256;
+
     }
+
   }
 }
 
@@ -367,14 +427,23 @@ void setSpriteDef(uint8_t ix, uint8_t defIX){
 // Tilemap funcs 
 
 /**
- * @brief Set the scanline at which to split the display. Once the renderer reaches this line it will begin to draw from the top row of tiles in the screenRam. 
- *        Useful for games that scroll and require a static status bar.
+ * @brief Set the scanlines at which to split the display. Once the renderer reaches the topY line it will begin drawing from the top of screenRAM+(static RAM lines).
+ * Once it reaches bottomY it will resume drawing from top of screenRAM. So think of the static top and bottom sections to be in the top of screen RAM, and the centre
+ * scrolling section to be after that initial static section. This allows the centre of the screen to scroll and X lines at the top and bottom to remain static for
+ * score, status etc if needed. If no static sections are required, then set topY to 0 and bottomY to a value higher than 255.
  * 
- * @param x The scanline at which to split - if over 255, the split will not occur
+ * @param topY The scanline at which to allow scrolling to start
+ * @param bottomY The scanline at which to stop scrolling section and revert to drawing from top of screen RAM
  */
-void setTileRowSplit(uint16_t x){
-    lineCompare=x;
-    tileRowStart=CHARACTER_ROWS-(lineCompare/PIXELS_PER_CHARACTER);
+void setTileRowSplit(uint16_t topY,uint16_t bottomY){
+    topLineCompare=topY;
+    bottomLineCompare=bottomY;
+    screenRamRowBottomReset=(topLineCompare/PIXELS_PER_CHARACTER);
+    tileRowStart=CHARACTER_ROWS-(bottomLineCompare/PIXELS_PER_CHARACTER);
+    tileRowStart+=screenRamRowBottomReset;
+
+    pScreenRamBottomReset=screenRam+(screenRamRowBottomReset*BYTES_PER_BUFFER_LINE);
+
 }
 
 /**
@@ -388,12 +457,16 @@ void setScroll(uint8_t x, uint8_t y){
     #if USE_MASK==1
     hScroll=x;
     uint8_t a=(uint8_t)(hScroll&0x07);
-    hScrollSMask=0x7f>>a;
-    hScrollEMask=0xfe<<(7-a);
+    hScrollSMaskReset=0x7f>>a;
+    hScrollEMaskReset=0xfe<<(7-a);
+    hSoffReset=((7-a)*2);
+    ocr1bReset=LEFT_EDGE+hSoffReset;
     #else
     hScrollSMask=0;
     hScrollEMask=0;
+    ocr1bReset=LEFT_EDGE
     #endif
+    screenRamRowTopReset=tileRowStart+((vScroll>>3)%(CHARACTER_ROWS-tileRowStart));
 }
 
 /**
@@ -416,9 +489,9 @@ void clearTileMap(const uint8_t charIX){
  */
 void shiftTiles(int8_t offset,uint8_t fillTile){
   if(offset<0){
-    uint8_t *p=screenRam;
+    uint8_t *p=screenRam+(tileRowStart*BYTES_PER_BUFFER_LINE);
     const uint8_t off=-offset;
-    for(uint8_t row=0;row<CHARACTER_ROWS;row++){
+    for(uint8_t row=tileRowStart;row<CHARACTER_ROWS;row++){
       uint8_t shiftNum=BYTES_PER_BUFFER_LINE-off;
       while(shiftNum){
         *p=*(p+off);
@@ -434,7 +507,7 @@ void shiftTiles(int8_t offset,uint8_t fillTile){
   }else{
     uint8_t *p=screenRam+(SCREEN_RAM_SIZE-1);
     const uint8_t off=offset;
-    for(uint8_t row=0;row<CHARACTER_ROWS;row++){
+    for(uint8_t row=tileRowStart;row<CHARACTER_ROWS;row++){
       uint8_t shiftNum=BYTES_PER_BUFFER_LINE-off;
       while(shiftNum){
         *p=*(p-off);

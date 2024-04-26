@@ -40,7 +40,7 @@ GameState gameState=idle;
 
 uint8_t giu,giv,giw,gix,giy,giz;  // General purpose registers for game
 
-const uint8_t fontIX=180;  // From the comments in gameAssets we know this is where the font data begins...
-const uint8_t blankTile=fontIX+38;
+const uint8_t fontIX=256-64;  // From the comments in gameAssets we know this is where the font data begins...
+const uint8_t blankTile=0;
 
 #endif

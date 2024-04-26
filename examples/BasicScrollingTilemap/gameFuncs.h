@@ -30,17 +30,41 @@ extern "C" { void storeHi(); }
 
 void setState(GameState nextState);
 void gameLoop();
+void drawText(const uint8_t *txt, uint8_t x, uint8_t y);
+void drawText(const uint8_t *charA, uint8_t x, uint8_t y, uint8_t len);
 
 
 // Implementations
+
+void drawChar(uint8_t chr, uint8_t x, uint8_t y){
+  uint8_t *p=screenRam+(y*BYTES_PER_BUFFER_LINE)+x;
+  *p=chr;
+  *(p+BYTES_PER_BUFFER_LINE)=(chr==0?0:chr+32);
+}
+
+void drawText(const uint8_t *charA, uint8_t x, uint8_t y, uint8_t len){
+  for(uint8_t n=0;n<len;n++){
+    drawChar(pgm_read_byte(charA++),x++,y);
+  }
+}
 
 void setState(GameState nextState){
   
   switch(nextState){
 
     case gameInit:
+    {
       // Set the background to blank tiles,
       clearTileMap(blankTile);
+      setTileRowSplit(16,232);
+      uint8_t ix=0;
+      for(uint8_t y=0;y<12;y++){
+        for(uint8_t x=0;x<16;x++){
+          screenRam[((y+9)*32)+(x+1)]=ix++;
+        }
+      }
+      drawText(bottomText,0,2,32);
+    }
     break;
 
     case title:
@@ -103,55 +127,59 @@ void gameLoop(){
     {
       // Just set the sprite defs up for all 9 sprites based on the current display frame
       for(uint8_t n=0;n<9;n++){
+
         // Sprite def for this sprite for this frame is based on its index and the current display frame counter
         uint8_t defIX=(n+(currentFrame>>(n>>1)));
-        // Update sprites
-        setSpriteDef(n,defIX%4);
-        // They never actually change position here, but could pretty easily...
-        setSpritePos(n,80+((n%3)*32),80+(n/3)*32);
-      }
 
-      // currentFrame increments each frame, and rolls over after 255 back to 0. So gix will count from 255-0, meaning we'll scroll to the right
-      gix=0-(currentFrame<<1);
+        // Just spin the sprites in a circle...
+        float r=(PI*2)/200.0;
+        uint8_t sX=116+(int8_t)((sin(r*giv))*116.0);
+        uint8_t sY=112+(int8_t)((-sin((PI/2)+(r*giv*3)))*90.0);
+        setSpritePos(n,sX,sY);
 
-      // If the X scroll offset has crossed a tile boundary, shift the tilemap across to affect smooth scrolling
-      giu-=3;
-      if(giu>127){
-        giu+=8;
-        shiftTiles(1,fontIX+((currentFrame>>3)&0x07));
-      }
-
-      // Scroll down by 2 pixels per frame and across by 1 pixel. Note that the X scroll position is an offset only. This is between 0 and 7, it
-      // is up to the programmer to shift the tiles once they cross an offset boundary, otherwise they'll just "ping" back again. The Y scroll
-      // position is absolute though. There are reasons... erm... it'll be fixed...
-      setScroll(giu,gix); 
-
-      // If we've scrolled to a tile boundary, then clear and add an invader at the bottom of the tilemap (relative to the scroll position)
-      // Note: The BOTTOM_EDGE setting in the engineDef.h file defines how many of the tilemap rows we render. We have 32 rows but do not
-      // rander the bottom row, as it allows us to draw to it while it is hidden, allowing tiles to appear smoothly as they scroll into view.
-      if((gix&0x07)==0){
-
-        // Find the bottom-most tile row, relative to the current Y scroll position
-        uint8_t bottomRow=((gix>>3)+31)%32;
-
-        // If on a 16 pixel vertical boundary, draw a random invader and clear a random invader position
-        if((gix&0x0f)==0){
-
-          // Clear a random tile pair
-          uint8_t xOff=random(16)<<1;
-          screenRam[(BYTES_PER_BUFFER_LINE*bottomRow)+xOff]=blankTile;
-          screenRam[(BYTES_PER_BUFFER_LINE*bottomRow)+xOff+1]=blankTile;
-
-          // Draw a random invader at a tile pair
-          xOff=random(16)<<1;
-          uint8_t invaderType=225+(random(4)*2);
-          screenRam[(BYTES_PER_BUFFER_LINE*bottomRow)+xOff]=invaderType;
-          screenRam[(BYTES_PER_BUFFER_LINE*bottomRow)+xOff+1]=invaderType+1;
+        giv+=20;
+        if(giv>200){
+          giv-=200;
         }
 
-        // Draw blocks on the left edge of the row
-        screenRam[(BYTES_PER_BUFFER_LINE*bottomRow)+0]=255;
+      }
+      ++giv;
 
+      // If the X scroll offset has crossed a tile boundary, shift the tilemap across to affect smooth scrolling it
+      // is up to the programmer to shift the tiles once they cross an offset boundary, otherwise they'll just "ping" 
+      // back again. The Y scroll position is absolute though. There are reasons... erm... it'll be fixed...
+      if(giz<100){
+        ++giz;
+        giu-=1;
+        if(giu>127){  // giu is a uint8_t, so when it's under zero, it'll wrap to a value above 127...
+          giu+=8;
+          shiftTiles(1,blankTile);
+        }
+      }else{
+        ++giz;
+        giu+=1;
+        if(giu>7){  // giu is a uint8_t, so when it's under zero, it'll wrap to a value above 127...
+          giu-=8;
+          shiftTiles(-1,blankTile);
+        }
+        if(giz==200){
+          giz=0;
+        }
+      }
+
+      // "Sway" up and down using a sine wave based on the current frame...
+      float r=(PI*2)/256.0;
+      gix=190+(int8_t)((sin(r*currentFrame))*50.0);
+
+      setScroll(giu,gix); 
+
+      // Scroll text across the top.
+      if((currentFrame%5)==0){
+        for(uint8_t n=0;n<63;n++){
+          screenRam[n]=screenRam[n+1];
+        }
+        drawChar(pgm_read_byte(scrollText+giw),31,0);
+        ++giw;
       }
     }
     break;
