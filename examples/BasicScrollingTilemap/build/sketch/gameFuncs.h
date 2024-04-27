@@ -116,6 +116,7 @@ void setState(GameState nextState){
 void gameLoop(){
   // Wait until the current display frame has finished rendering
   waitFrame();
+
   //drawNumber(0,30,waitFrames,5);
   // Update the state of the controller/button inputs
   readInput();
@@ -126,25 +127,6 @@ void gameLoop(){
     
     case gameInit:
     {
-      // Just set the sprite defs up for all 9 sprites based on the current display frame
-      for(uint8_t n=0;n<9;n++){
-
-        // Sprite def for this sprite for this frame is based on its index and the current display frame counter
-        uint8_t defIX=(n+(currentFrame>>(n>>1)));
-
-        // Just spin the sprites in a circle...
-        float r=(PI*2)/200.0;
-        uint8_t sX=116+(int8_t)((sin(r*giv))*116.0);
-        uint8_t sY=112+(int8_t)((-sin((PI/2)+(r*giv*3)))*90.0);
-        setSpritePos(n,sX,sY);
-
-        giv+=20;
-        if(giv>200){
-          giv-=200;
-        }
-
-      }
-      ++giv;
 
       // If the X scroll offset has crossed a tile boundary, shift the tilemap across to affect smooth scrolling it
       // is up to the programmer to shift the tiles once they cross an offset boundary, otherwise they'll just "ping" 
@@ -173,6 +155,28 @@ void gameLoop(){
       gix=190+(int8_t)((sin(r*currentFrame))*50.0);
 
       setScroll(giu,gix); 
+
+
+      // Just set the sprite defs up for all 9 sprites based on the current display frame
+      for(uint8_t n=0;n<9;n++){
+
+        // Sprite def for this sprite for this frame is based on its index and the current display frame counter
+        uint8_t defIX=(n+(currentFrame>>(n>>1)));
+        setSpriteDef(n,defIX%8);
+
+        // Just spin the sprites in a circle...
+        float r=(PI*2)/200.0;
+        uint8_t rad=(giv+(n*5));
+        uint8_t sX=116+(int8_t)((sin(r*rad))*116.0);
+        uint8_t sY=112+(int8_t)((-sin((PI/2)+(r*rad*3)))*94.0);
+        setSpritePos(n,sX,sY);
+
+        if(giv>=200){
+          giv-=200;
+        }
+
+      }
+      ++giv;
 
       // Scroll text across the top.
       if((currentFrame%5)==0){
