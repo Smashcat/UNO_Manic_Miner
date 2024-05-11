@@ -1,5 +1,5 @@
 # Arduino UNO Game Engine
-Manic Miner and Space Invaders on the Arduino UNO with composite output
+Manic Miner, Scramble and Space Invaders on the Arduino UNO with composite output
 
 This is a project to demonstrate the use of my game engine, with a port of Manic Miner, originally for the ZX Spectrum, by Matthew Smith, and the original Space Invaders arcade machine. Please note that this is for the original Arduino UNO with the ATMega328P microcontroller - it will not work on any other versions of the Arduino. Also, some of the cheaper "Arduino compatible" boards use resonators instead of crystals for their clock. These are nowhere near accurate enough to generate the video signal. I have tried several and it caused extreme jitter in the image. If you can, use an official Arduino, or at least a board with a proper 16Mhz crystal!!
 
@@ -39,6 +39,15 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 + 2 Channel Audio
 
 
+## Scramble Game Features
+
++ Level data from original ROMs
++ Gameplay logic matches original game
++ Smooth pixel scrolling, with fixed starfield in background
++ Persistant high score (can be reset by holding Start at boot)
++ 2 Channel Audio
+
+
 ## YouTube:
  
 [![Manic Miner on Arduino UNO](https://img.youtube.com/vi/dm_dUSeIqC4/0.jpg)](https://www.youtube.com/watch?v=dm_dUSeIqC4)
@@ -64,6 +73,15 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 ![Render](./images/9.jpg?raw=true)
 
 ![Render](./images/10.jpg?raw=true)
+
+![Render](./images/11.jpg?raw=true)
+
+![Render](./images/12.jpg?raw=true)
+
+![Render](./images/13.jpg?raw=true)
+
+![Render](./images/14.jpg?raw=true)
+
 
 ### TFT TV screen:
 
