@@ -22,10 +22,10 @@
 // Maximum number of bullets player can have on screen at one time (default is 4 to match original game but it looks cooler with more :) )
 #define MAX_BULLETS                 4
 
-// Slowest rate at which fuel will deplete during game (this is the initial value at the start of the game)
+// Slowest rate at which fuel will deplete during game (this is the initial value at the start of the game - 21 seems to match original game)
 #define SLOWEST_FUEL_DEPLETION_RATE 21
 
-// Fastest rate at which fuel will deplete during game (this is the value used from the third loop around the stages onwards)
+// Fastest rate at which fuel will deplete during game (this is the value used from the third loop around the stages onwards - just enough fuel to complete last stage)
 #define FASTEST_FUEL_DEPLETION_RATE 13
 
 // Used all over the place to clear the tilemap. This is the index that defines a blank tile.
