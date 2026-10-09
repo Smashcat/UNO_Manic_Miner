@@ -144,6 +144,19 @@ void drawBigNum(uint32_t num, uint8_t x, uint8_t y, uint8_t digits){
   }
 }
 
+/// @brief The lives: 16x16 Pac-Men, chomping (the mouth changes every LIFE_CHOMP_FRAMES frames)
+void drawLives(){
+  uint8_t f=((tick/LIFE_CHOMP_FRAMES)&1)*4;
+  clearBlock(1,LIVES_ROW,10);
+  clearBlock(1,LIVES_ROW+1,10);
+  for(uint8_t i=0;i<lives;i++){
+    drawChar(pgm_read_byte(&lifeTiles[f]),1+(i*2),LIVES_ROW);
+    drawChar(pgm_read_byte(&lifeTiles[f+1]),2+(i*2),LIVES_ROW);
+    drawChar(pgm_read_byte(&lifeTiles[f+2]),1+(i*2),LIVES_ROW+1);
+    drawChar(pgm_read_byte(&lifeTiles[f+3]),2+(i*2),LIVES_ROW+1);
+  }
+}
+
 void drawHud(){
   drawBigStr_P(PSTR("SCORE"),1,1);
   drawBigNum(score,7,1,6);
@@ -153,15 +166,7 @@ void drawHud(){
   drawBigNum(secs/60,28,1,1);
   drawBigChar(':',29,1);
   drawBigNum(secs%60,30,1,2);
-  // Lives are 16x16 Pac-Men
-  clearBlock(1,LIVES_ROW,8);
-  clearBlock(1,LIVES_ROW+1,8);
-  for(uint8_t i=0;i<lives;i++){
-    drawChar(pgm_read_byte(&lifeTiles[0]),1+(i*2),LIVES_ROW);
-    drawChar(pgm_read_byte(&lifeTiles[1]),2+(i*2),LIVES_ROW);
-    drawChar(pgm_read_byte(&lifeTiles[2]),1+(i*2),LIVES_ROW+1);
-    drawChar(pgm_read_byte(&lifeTiles[3]),2+(i*2),LIVES_ROW+1);
-  }
+  drawLives();
   if(demoMode){
     drawBigStr_P(PSTR("DEMO"),1,LIVES_ROW);
   }
@@ -179,10 +184,18 @@ uint8_t rand8(){
 
 // ---- World -----------------------------------------------------------------------------------------------------
 
-/// @brief Kind of a cell in a map. Maps are packed two cells to a byte
-uint8_t mapKind(uint8_t mapIx, uint16_t ix){
-  uint8_t b=pgm_read_byte(&mapData[mapIx][ix>>1]);
-  return (ix&1)?(b>>4):(b&15);
+/// @brief Kind of a cell in a half-map, at row cy and column lx of the half. Maps are packed two cells to a byte, and only
+/// the left hand mazes are stored: an odd map number is the maze before it flipped left to right (with the corner pieces
+/// swapped round), which is what the right hand half uses
+uint8_t mapKindXY(uint8_t mapIx, uint8_t cy, uint8_t lx){
+  bool flip=(mapIx&1);
+  uint16_t ix=((uint16_t)cy*MAP_W)+(flip?(MAP_W-1-lx):lx);
+  uint8_t b=pgm_read_byte(&mapData[mapIx>>1][ix>>1]);
+  uint8_t k=(ix&1)?(b>>4):(b&15);
+  if(flip && k>=K_ES && k<=K_NW){
+    k=((k-K_ES)^1)+K_ES;     // east-south <-> south-west, north-east <-> north-west
+  }
+  return k;
 }
 
 /// @brief Which map is used for column lx of a half. While a half is being replaced, columns the wave has already
@@ -228,7 +241,7 @@ uint8_t cellKind(uint8_t cx, uint8_t cy){
     lx=cx-RIGHT_HALF_X;
   }
   uint16_t ix=((uint16_t)cy*MAP_W)+lx;
-  uint8_t k=mapKind(mapFor(half,lx),ix);
+  uint8_t k=mapKindXY(mapFor(half,lx),cy,lx);
   if((k==K_DOT || k==K_PELLET) && (dotBits[half][ix>>3]&(1<<(ix&7)))==0){
     k=K_PATH;
   }
@@ -245,14 +258,14 @@ bool walkable(int8_t cx, int8_t cy){
 
 void redrawCell(uint8_t cx, uint8_t cy);
 
-/// @brief Points/10 shown at this cell, or 0 if there is no trail dot there
-uint8_t trailValueAt(uint8_t cx, uint8_t cy){
+/// @brief The tile for a trail number at this cell (the number bounces: 8 frames over its life), or 255 if there is none
+uint8_t trailTileAt(uint8_t cx, uint8_t cy){
   for(uint8_t i=0;i<TRAIL_SLOTS;i++){
     if(trail[i].timer && trail[i].cx==cx && trail[i].cy==cy){
-      return trail[i].value;
+      return pgm_read_byte(&trailTiles[trail[i].value-1][(TRAIL_FRAMES-trail[i].timer)>>2]);
     }
   }
-  return 0;
+  return 255;
 }
 
 void trailAdd(uint8_t cx, uint8_t cy, uint8_t value){
@@ -286,8 +299,12 @@ void trailClear(){
 
 void trailUpdate(){
   for(uint8_t i=0;i<TRAIL_SLOTS;i++){
-    if(trail[i].timer && --trail[i].timer==0){
-      redrawCell(trail[i].cx,trail[i].cy);
+    if(trail[i].timer){
+      --trail[i].timer;
+      // Redraw when the number moves on to its next frame (every 4 frames), and when it disappears
+      if(trail[i].timer==0 || ((TRAIL_FRAMES-trail[i].timer)&3)==0){
+        redrawCell(trail[i].cx,trail[i].cy);
+      }
     }
   }
 }
@@ -295,9 +312,9 @@ void trailUpdate(){
 /// @brief The tile to show for a world cell. While a half-map is being replaced, a column of Pac-Man tiles sweeps
 /// out from the centre; behind it the maze is shown "filled in", and a ripple then turns it back to normal
 uint8_t cellTileAt(uint8_t cx, uint8_t cy){
-  uint8_t tv=trailValueAt(cx,cy);
-  if(tv){
-    return pgm_read_byte(&trailTiles[tv-1]);
+  uint8_t tt=trailTileAt(cx,cy);
+  if(tt!=255){
+    return tt;
   }
   uint8_t kind=cellKind(cx,cy);
   uint8_t d=wipeDist(cx);
@@ -322,11 +339,14 @@ void loadHalf(uint8_t half, uint8_t mapIx){
   for(uint8_t i=0;i<sizeof(dotBits[0]);i++){
     dotBits[half][i]=0;
   }
-  for(uint16_t ix=0;ix<MAP_SIZE;ix++){
-    uint8_t k=mapKind(mapIx,ix);
-    if(k==K_DOT || k==K_PELLET){
-      dotBits[half][ix>>3]|=(1<<(ix&7));
-      ++dotsLeft[half];
+  for(uint8_t cy=0;cy<MAP_H;cy++){
+    for(uint8_t lx=0;lx<MAP_W;lx++){
+      uint16_t ix=((uint16_t)cy*MAP_W)+lx;
+      uint8_t k=mapKindXY(mapIx,cy,lx);
+      if(k==K_DOT || k==K_PELLET){
+        dotBits[half][ix>>3]|=(1<<(ix&7));
+        ++dotsLeft[half];
+      }
     }
   }
 }
@@ -337,14 +357,14 @@ void loadHalf(uint8_t half, uint8_t mapIx){
 typedef struct BandItem{
   uint8_t x;      // tile column within the scene
   uint8_t row;    // tile row within the band
-  uint8_t kind;   // 0=Pac-Man, 1=ghost, 2=frightened ghost, 3=big Pac-Man, 4=big ghost
+  uint8_t kind;   // 0=Pac-Man, 1=ghost, 2=frightened ghost, 3=big Pac-Man facing left, 4=big ghost, 5=big Pac-Man facing right
 } BandItem;
 
 const BandItem sceneA[] PROGMEM={ {0,2,1},{4,2,0} };                                   // a ghost chasing Pac-Man
 const BandItem sceneB[] PROGMEM={ {0,2,2},{4,1,3} };                                   // big Pac-Man chasing a frightened ghost
-const BandItem sceneC[] PROGMEM={ {0,1,4},{6,1,4},{11,2,0} };                           // two big ghosts chasing Pac-Man
+const BandItem sceneC[] PROGMEM={ {0,1,4},{5,1,4},{10,1,5} };                           // two big ghosts chasing big Pac-Man
 const uint8_t sceneCount[3] PROGMEM={2,2,3};
-const uint8_t sceneWidth[3] PROGMEM={6,8,13};
+const uint8_t sceneWidth[3] PROGMEM={6,8,14};
 #define BAND_X      20      // where in the band's world the scene sits
 
 uint8_t bandTileAt(uint8_t col, uint8_t row){
@@ -364,7 +384,8 @@ uint8_t bandTileAt(uint8_t col, uint8_t row){
       case 1: off=f?CHR_GHOST1:CHR_GHOST0; break;
       case 2: off=f?CHR_SCARED1:CHR_SCARED0; break;
       case 3: off=f?CHR_BIGPAC_SHUT:CHR_BIGPAC_OPEN; w=4; h=4; break;
-      default: off=f?CHR_BIGGHOST1:CHR_BIGGHOST0; w=4; h=4; break;
+      case 4: off=f?CHR_BIGGHOST1:CHR_BIGGHOST0; w=4; h=4; break;
+      default: off=f?CHR_BIGPAC_SHUT:CHR_BIGPAC_R_OPEN; w=4; h=4; break;
     }
     if(col>=x && col<x+w && row>=r && row<r+h){
       return pgm_read_byte(&charTiles[off+((row-r)*w)+(col-x)]);
@@ -840,7 +861,7 @@ void wipeStep(){
       dotBits[half][ix>>3]&=~mask;
       --dotsLeft[half];
     }
-    uint8_t k=mapKind(wipeNewMap,ix);
+    uint8_t k=mapKindXY(wipeNewMap,cy,lx);
     if(k==K_DOT || k==K_PELLET){
       dotBits[half][ix>>3]|=mask;
       ++dotsLeft[half];
@@ -874,7 +895,9 @@ void scareGhosts(){
   if(scareTimer==0){
     ghostChain=0;     // a new pellet only restarts the 400, 800 ... 3200 chain if the last one has worn off
   }
-  scareTimer=SCARE_FRAMES;
+  // The longer the game goes on, the shorter the time they stay frightened
+  uint16_t cut=(uint16_t)fruitsEaten*SCARE_REDUCTION;
+  scareTimer=(cut>=(SCARE_FRAMES-SCARE_MIN_FRAMES))?SCARE_MIN_FRAMES:(SCARE_FRAMES-cut);
   for(uint8_t i=0;i<NUM_GHOSTS;i++){
     if(ghosts[i].state==GS_AWAKE){
       ghosts[i].state=GS_SCARED;
@@ -899,10 +922,10 @@ void pacEat(uint8_t cx, uint8_t cy){
   uint8_t mask=(1<<(ix&7));
   if(dotBits[half][ix>>3]&mask){
     dotBits[half][ix>>3]&=~mask;
-    if(mapKind(mapFor(half,lx),ix)==K_PELLET){
+    if(mapKindXY(mapFor(half,lx),cy,lx)==K_PELLET){
       score+=SCORE_PELLET;
       trailAdd(cx,cy,SCORE_PELLET/10);
-      sfxLow=1;
+      sfxStart(SFX_PELLET,12);
       scareGhosts();
     }else{
       // Dots are worth more the more of them have been eaten without dying
@@ -912,13 +935,12 @@ void pacEat(uint8_t cx, uint8_t cy){
       }
       score+=tens*10;
       trailAdd(cx,cy,tens);
-      sfxLow=0;
+      sfxToggle^=1;
+      sfxStart(SFX_CHOMP,4);     // (ignored while a power pellet sound is still playing)
     }
     ++dotsEaten;
     hudDirty=1;
     redrawCell(cx,cy);
-    sfxToggle^=1;
-    sfxStart(SFX_CHOMP,4);
     if(--dotsLeft[half]==0 && wipeHalf!=half){
       clearedMask|=(1<<half);
       if(!fruitActive){
@@ -935,7 +957,8 @@ void updatePac(){
   else if(PRESSING_RIGHT){ pacWant=DIR_RIGHT; }
   else if(PRESSING_DOWN){ pacWant=DIR_DOWN; }
   else if(PRESSING_LEFT){ pacWant=DIR_LEFT; }
-  else{ pacWant=DIR_NONE; }   // Pac-Man just keeps going the way he was facing until he hits a wall
+  // (No button pressed: the last direction pressed stays buffered in pacWant, and Pac-Man takes it at the next opening - so a
+  // turn can be pre-selected before the corner. He keeps going the way he was facing until then, or until he hits a wall.)
 
   uint8_t dist=2;
   while(dist){
@@ -1040,6 +1063,7 @@ void updateSprites(){
   for(uint8_t i=0;i<NUM_GHOSTS;i++){
     Ghost *g=&ghosts[i];
     uint8_t def;
+    uint8_t mask=255;     // (255: use the mask that goes with the frame)
     uint8_t st=g->state;
     if((st==GS_PEN || st==GS_LEAVING) && scareTimer){
       st=GS_SCARED;   // the power pellet frightens the ghosts waiting in the box too
@@ -1060,17 +1084,26 @@ void updateSprites(){
       case GS_PEN:
       case GS_LEAVING:
       case GS_AWAKE:
-        def=SPR_GHOST_AWAKE_0+anim;
-        break;
+      {
+        // The eyes look the way the ghost is going (on its way out of the box, along and then up)
+        uint8_t d=g->dir;
+        if(st==GS_LEAVING){
+          d=(g->x<GATE_X)?DIR_RIGHT:((g->x>GATE_X)?DIR_LEFT:DIR_UP);
+        }
+        def=SPR_GHOSTDIR_UP_0+(d*2)+anim;
+        mask=SPR_GHOST_AWAKE_0_MASK+anim;
+      }
+      break;
       case GS_SCARED:
-        // Blink between scared and normal when the effect is about to wear off
-        def=((scareTimer<120 && (tick&8))?SPR_GHOST_AWAKE_0:SPR_GHOST_SCARED_0)+anim;
+        // An outline of the ghost, still looking where it is going. Blink to the solid ghost when the effect is about to wear off
+        def=((scareTimer<120 && (tick&8))?SPR_GHOSTDIR_UP_0:SPR_SCAREDDIR_UP_0)+(g->dir*2)+anim;
+        mask=SPR_GHOST_AWAKE_0_MASK+anim;
         break;
       default:
         def=SPR_GHOST_EYES;
         break;
     }
-    placeSprite(SPRITE_GHOST0+i,g->x,g->y,def);
+    placeSpriteMasked(SPRITE_GHOST0+i,g->x,g->y,def,(mask==255)?(def+SPR_MASK_OFFSET):mask);
   }
 
   // The score of an eaten ghost flying up to the score display
@@ -1156,6 +1189,7 @@ void titleEnterBand(){
   setTileRowSplit(BAND_TOP,BAND_BOTTOM);
   clearTileMap(BLANK_TILE);
   selectTileBank(BANK_TITLE);
+  selectBottomTileBank(BANK_SCORES);   // the stripe, PRESS START BUTTON and the credits below the band come from the scores bank
   for(uint8_t j=0;j<TITLE_LOGO_ROWS;j++){
     for(uint8_t c=0;c<BYTES_PER_BUFFER_LINE;c++){
       screenRam[((TITLE_LOGO_ROW+j)*BYTES_PER_BUFFER_LINE)+c]=pgm_read_byte(&titleLogo[j][c]);
@@ -1239,7 +1273,7 @@ void titleLoop(){
         }
       }
       // Run the current scene across the band
-      static const uint8_t sceneLen[SCENE_COUNT] PROGMEM={152,160,180};
+      static const uint8_t sceneLen[SCENE_COUNT] PROGMEM={152,160,184};
       scrollBy(bandScene==1?2:-2);
       if((tick&3)==0){
         drawFullView();      // swap the animation frames
@@ -1260,6 +1294,7 @@ void titleLoop(){
 
 void rankingStart(){
   setLayoutFull(BANK_SCORES);
+  paradeS=0;
   rankBlank=255;
   rankFrame=0;
   scrollMode=SM_RANK;
@@ -1270,6 +1305,48 @@ void rankingStart(){
   attractPhase=0;
   drawFullView();
   audioMute();
+}
+
+/// @brief Where the character s pixels along the parade path is, and which way it is heading. The path: in from the right along the
+/// bottom, up the left side of the table, across the top between the title and the table, down the right side, and out to the right
+void paradePos(int16_t s, int16_t *x, int16_t *y, uint8_t *dir){
+  const int16_t l1=256-PARADE_LEFT, l2=PARADE_BOTTOM-PARADE_TOP, l3=PARADE_RIGHT-PARADE_LEFT;
+  if(s<l1){ *x=256-s; *y=PARADE_BOTTOM; *dir=DIR_LEFT; return; }
+  s-=l1;
+  if(s<l2){ *x=PARADE_LEFT; *y=PARADE_BOTTOM-s; *dir=DIR_UP; return; }
+  s-=l2;
+  if(s<l3){ *x=PARADE_LEFT+s; *y=PARADE_TOP; *dir=DIR_RIGHT; return; }
+  s-=l3;
+  if(s<l2){ *x=PARADE_RIGHT; *y=PARADE_TOP+s; *dir=DIR_DOWN; return; }
+  s-=l2;
+  *x=PARADE_RIGHT+s; *y=PARADE_BOTTOM; *dir=DIR_RIGHT;
+}
+
+void paradeSprites(){
+  for(uint8_t i=0;i<5;i++){
+    // The leader is Pac-Man, then the four ghosts follow behind
+    int16_t s=paradeS-((int16_t)i*PARADE_SPACING);
+    uint8_t sprite=(i==0)?SPRITE_PAC:(SPRITE_GHOST0+i-1);
+    int16_t x=0,y=0;
+    uint8_t dir=DIR_LEFT;
+    if(s>=0){
+      paradePos(s,&x,&y,&dir);
+    }
+    if(s<0 || x<0 || x>240){
+      resetSprite(sprite);     // (not on the screen yet, or gone off it again)
+      continue;
+    }
+    uint8_t def,mask;
+    if(i==0){
+      def=pgm_read_byte(&pacBaseFrame[dir])+((tick>>2)&1);
+      mask=def+SPR_MASK_OFFSET;
+    }else{
+      def=SPR_GHOSTDIR_UP_0+(dir*2)+((tick>>3)&1);      // (the ghosts look where they are going)
+      mask=SPR_GHOST_AWAKE_0_MASK+((tick>>3)&1);
+    }
+    setSpritePos(sprite,x,y);
+    setSpriteDef(sprite,def,mask);
+  }
 }
 
 /// @brief Redraw the visible part of a high score entry
@@ -1295,9 +1372,10 @@ void rankingLoop(){
     }
     rankRedrawEntry(rankBlank);
   }
-  // The page slides in from the right, stays put for a while, then carries on off to the left
-  if(camX==263 && attractPhase<RANK_HOLD_FRAMES){
-    ++attractPhase;
+  // The page slides in from the right and stays put while Pac-Man and the ghosts parade round it, and then carries on off to the left
+  if(camX==263 && paradeS<=PARADE_END){
+    paradeS+=PARADE_SPEED;
+    paradeSprites();
     return;
   }
   scrollBy(2);
@@ -1308,13 +1386,14 @@ void rankingLoop(){
 }
 
 // ---- Name entry ------------------------------------------------------------------------------------------------
-// 1) The CONGRATULATIONS heading scrolls up the screen. 2) PLEASE ENTER YOUR NAME is typed out a character a frame.
-// 3) Everything else appears, and the name can be entered: up/down changes a letter, left/right moves along, and
+// 1) The CONGRATULATIONS heading scrolls up the screen. 2) Pac-Man races across and PLEASE ENTER YOUR NAME appears in his trail.
+// 3) Everything else appears and he races in from the left to the first letter, and the name can be entered: up/down changes a letter, left/right moves along, and
 // moving onto the ghost enters the name.
 
 #define ENTRY_Y             172
 #define ENTRY_X(pos)        (84+((pos)*32))     // sprites centred under the letter in tile column 12+4*pos
 #define ENTRY_MESSAGE_LEN   22
+#define NAME_PAC_SPEED      6       // pixels a frame for Pac-Man racing across the name entry screen
 
 void nameEntryDrawLetters(){
   for(uint8_t i=0;i<3;i++){
@@ -1381,14 +1460,49 @@ void nameEntryLoop(){
   }
 
   if(attractPhase==1){
-    // Type out the message
+    // Pac-Man races across from the left at the height of the text, and each letter appears as he passes over it, as if he
+    // is leaving them behind in his trail. attractTimer is his x position
     static const char message[] PROGMEM="PLEASE ENTER YOUR NAME";
-    drawChar(charTile(pgm_read_byte(&message[attractTimer])),5+attractTimer,9);
-    if(++attractTimer>=ENTRY_MESSAGE_LEN){
-      nameEntryDrawRest();
-      attractPhase=2;
+    int16_t x=attractTimer;
+    attractTimer+=NAME_PAC_SPEED;
+    // Which letters has he reached? (the text starts at x=40, and his middle is a little to the right of his sprite position)
+    int16_t reached=((x+12-40)>>3)+1;
+    if(reached>ENTRY_MESSAGE_LEN){
+      reached=ENTRY_MESSAGE_LEN;
+    }
+    while((int16_t)entryPos<reached){
+      drawChar(charTile(pgm_read_byte(&message[entryPos])),5+entryPos,9);
+      ++entryPos;
+    }
+    if(x<=240){
+      uint8_t anim=(tick>>2)&1;
+      setSpritePos(SPRITE_PAC,x,68);
+      setSpriteDef(SPRITE_PAC,SPR_PAC_RIGHT_0+anim,SPR_PAC_RIGHT_0+anim+SPR_MASK_OFFSET);
+    }else{
+      resetSprite(SPRITE_PAC);
+      if(entryPos>=ENTRY_MESSAGE_LEN){
+        // He has gone off the right hand side: now the rest appears, and he comes in again from the left for the letter picker
+        nameEntryDrawRest();
+        entryPos=0;
+        attractPhase=2;
+        attractTimer=0;
+      }
     }
     return;
+  }
+
+  if(attractPhase==2){
+    // Pac-Man races along to the first letter
+    int16_t x=attractTimer;
+    attractTimer+=NAME_PAC_SPEED;
+    if(x>=ENTRY_X(0)){
+      attractPhase=3;      // and now it's up to the player
+    }else{
+      uint8_t anim=(tick>>2)&1;
+      setSpritePos(SPRITE_PAC,x,ENTRY_Y);
+      setSpriteDef(SPRITE_PAC,SPR_PAC_RIGHT_0+anim,SPR_PAC_RIGHT_0+anim+SPR_MASK_OFFSET);
+      return;
+    }
   }
 
   uint8_t pos=entryPos;
@@ -1419,10 +1533,49 @@ void nameEntryLoop(){
   setSpritePos(SPRITE_PAC,ENTRY_X(pos),ENTRY_Y);
   setSpriteDef(SPRITE_PAC,SPR_PAC_RIGHT_0+anim,SPR_PAC_RIGHT_0+anim+SPR_MASK_OFFSET);
   setSpritePos(SPRITE_GHOST0,ENTRY_X(3),ENTRY_Y);
-  setSpriteDef(SPRITE_GHOST0,SPR_GHOST_AWAKE_0+((tick>>3)&1),SPR_GHOST_AWAKE_0+((tick>>3)&1)+SPR_MASK_OFFSET);
+  setSpriteDef(SPRITE_GHOST0,SPR_GHOSTDIR_LEFT_0+((tick>>3)&1),SPR_GHOST_AWAKE_0_MASK+((tick>>3)&1));      // (looking back at Pac-Man)
   // Make the selected letter blink
   if(tick&8){
     drawChar(BLANK_TILE,12+(pos*4),19);
+  }
+}
+
+// ---- GAME OVER -------------------------------------------------------------------------------------------------
+// The words are cut into 16 pixel wide slices, one per sprite, which bob up and down in a wave across the middle of the
+// maze. (Every other sprite is hidden while it happens, as it uses them all.)
+
+// How far along its glide a letter is, 0 to 255, for 0 to 64 sixty-fourths of the way: a quarter of a sine wave, so it starts fast
+// and slows to a stop
+const uint8_t easeTab[65] PROGMEM={0,6,13,19,25,31,37,44,50,56,62,68,74,80,86,92,98,103,109,115,120,126,131,136,142,147,152,157,162,167,171,176,180,185,189,193,197,201,205,208,212,215,219,222,225,228,231,233,236,238,240,242,244,246,247,249,250,251,252,253,254,254,255,255,255};
+
+// Heights of the GAME OVER letters: one cycle of a sine wave in 64 steps, 12 pixels either way
+const int8_t waveTab[64] PROGMEM={0,1,2,3,5,6,7,8,8,9,10,11,11,11,12,12,12,12,12,11,11,11,10,9,8,8,7,6,5,3,2,1,0,-1,-2,-3,-5,-6,-7,-8,-8,-9,-10,-11,-11,-11,-12,-12,-12,-12,-12,-11,-11,-11,-10,-9,-8,-8,-7,-6,-5,-3,-2,-1};
+
+void gameOverSprites(){
+  // The two words each move as one piece: GAME glides in from the left and OVER from the right, easing to a stop either side of
+  // the middle of the screen. Both bob up and down on the sine wave all the time, half a cycle (32 steps) apart
+  int16_t final1=(256-(GAMEOVER_W1+GAMEOVER_GAP+GAMEOVER_W2))/2;
+  int16_t final2=final1+GAMEOVER_W1+GAMEOVER_GAP;
+  for(uint8_t word=0;word<2;word++){
+    uint8_t elapsed=tick;
+    if(word){
+      elapsed=(tick>GAMEOVER_WORD_DELAY)?(tick-GAMEOVER_WORD_DELAY):0;
+    }
+    uint16_t e=(elapsed>=GAMEOVER_GLIDE_FRAMES)?255:pgm_read_byte(&easeTab[(elapsed*64)/GAMEOVER_GLIDE_FRAMES]);
+    int16_t away=(int16_t)((256UL*(255-e))/255);           // how far from its place it still is: 256 pixels, then 0
+    int16_t pos=word?(final2+away):(final1-away);
+    int8_t bob=(int8_t)pgm_read_byte(&waveTab[((tick/GAMEOVER_WAVE_FRAMES)+(word?32:0))&63]);
+    uint8_t first=word?GAMEOVER_WORD1_SLICES:0;
+    uint8_t count=word?(NUM_GAMEOVER_SPRITES-GAMEOVER_WORD1_SLICES):GAMEOVER_WORD1_SLICES;
+    for(uint8_t j=0;j<count;j++){
+      int16_t x=pos+(j*16);
+      if(x<0 || x>240){
+        resetSprite(first+j);      // (not on the screen yet - sprites can't be partly off the edge)
+        continue;
+      }
+      setSpritePos(first+j,x,(VIEW_TOP+((VIEW_BOTTOM-VIEW_TOP)/2)-8)+bob);
+      setSpriteDef(first+j,SPR_GAMEOVER_0+first+j,SPR_GAMEOVER_MASK_0+first+j);
+    }
   }
 }
 
@@ -1457,6 +1610,8 @@ void startGame(){
   ghostChain=0;
   freezeTimer=0;
   scoreFlyTimer=0;
+  lifeAwards=0;
+  extraLifeTimer=0;
   dotsEaten=0;
   demoMode=0;
   pacX=(int16_t)START_CX<<3;
@@ -1479,11 +1634,18 @@ void setState(GameState nextState){
       audioInit();
       // Holding SELECT and START as the game starts puts the original high scores back
       readInput();
-      if(PRESSING_START && PRESSING_OPTION){
+      resetMessage=(PRESSING_START && PRESSING_OPTION);
+      if(resetMessage){
         scoresReset();
       }
       scoresInit();
-      setLayoutFull(BANK_TITLE);
+      if(resetMessage){
+        // Say so, in the middle of the screen, for a couple of seconds before the title appears
+        setLayoutFull(BANK_SCORES);
+        drawStr_P(PSTR("HIGH SCORES RESET"),7,14);
+      }else{
+        setLayoutFull(BANK_TITLE);
+      }
     }
     break;
 
@@ -1522,20 +1684,16 @@ void setState(GameState nextState){
     case dying:
       dyingTimer=0;
       finishScoreFly();     // (a score still in the air is added at once)
+      extraLifeTimer=0;
       dotsEaten=0;     // dots go back to being worth 10 points
       audioMute();
     break;
 
     case gameOver:
-    {
-      bool timeUp=(framesLeft==0);
-      uint32_t finalScore=score;
-      setLayoutFull(BANK_GAME);
+      // GAME OVER is written across the middle of the maze (which stays as it is) by sprites - see gameOverSprites()
       audioMute();
-      drawStr_P((timeUp?PSTR("TIME UP"):PSTR("GAME OVER")),12,SCROLL_ROW(7));
-      drawStr_P(PSTR("SCORE"),10,SCROLL_ROW(10));
-      drawNumPad(finalScore,16,SCROLL_ROW(10),6);
-    }
+      resetSprites();
+      scoreFlyTimer=0;
     break;
 
     default:
@@ -1548,6 +1706,18 @@ void setState(GameState nextState){
 }
 
 /// @brief One frame of the game itself. Used for real games and for the demo
+/// @brief Award an extra life each time the score passes another multiple of EXTRA_LIFE_SCORE
+void checkExtraLife(){
+  if(!demoMode && score>=((uint32_t)(lifeAwards+1))*EXTRA_LIFE_SCORE){
+    ++lifeAwards;
+    if(lives<MAX_LIVES){
+      ++lives;
+    }
+    hudDirty=1;
+    extraLifeTimer=EXTRA_LIFE_TOTAL;
+  }
+}
+
 void playFrame(){
   if(framesLeft==0){
     setState(gameOver);
@@ -1583,6 +1753,7 @@ void playFrame(){
     }
   }
   scoreFlyUpdate();
+  checkExtraLife();
   followPac();
   updateSprites();
   if(!demoMode){
@@ -1590,6 +1761,8 @@ void playFrame(){
   }
   if(hudDirty){
     drawHud();
+  }else if(!demoMode && (tick%LIFE_CHOMP_FRAMES)==0){
+    drawLives();
   }
 }
 
@@ -1606,7 +1779,9 @@ void gameLoop(){
   switch(gameState){
 
     case gameInit:
-      setState(title);
+      if(!resetMessage || tick>RESET_MESSAGE_FRAMES){
+        setState(START_ON_RANKING?ranking:title);
+      }
     break;
 
     case title:
@@ -1683,13 +1858,11 @@ void gameLoop(){
     break;
 
     case gameOver:
+      gameOverSprites();
       if(tick>GAMEOVER_FRAMES){
+        // A score that makes the table goes on to enter a name; otherwise it is back to the title
         entryRank=scoreRank(score);
-        if(entryRank<NUM_SCORES){
-          setState(nameEntry);
-        }else{
-          setState(title);
-        }
+        setState(entryRank<NUM_SCORES?nameEntry:title);
       }
     break;
 

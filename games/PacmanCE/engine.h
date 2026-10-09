@@ -78,7 +78,7 @@ volatile uint8_t currentFrame=0;  // Increments every frame, automatically wraps
 volatile uint8_t lastFrame=0;
 volatile uint8_t displayLine=0;
 volatile uint8_t *pScreenRam;
-volatile uint8_t spriteLine[BYTES_PER_RASTER+2]__attribute__((aligned(64))) ={0};
+volatile uint8_t spriteLine[BYTES_PER_RASTER+3]__attribute__((aligned(64))) ={0};
 volatile uint16_t tcnt;
 
 const uint8_t *spriteDefRef;  // ASM uses this pointer to the const sprite data array - this gives the possibility of bank switching sprites if there are more than 256 (unlikely as that is!)
@@ -100,6 +100,10 @@ uint8_t screenRamRowTopReset=0;
 uint8_t screenRamRowBottomReset=0;
 uint8_t *pScreenRamBottomReset;
 const uint8_t *currentTileData;
+// The video interrupt reads tiles from isrTileData. It is the same as currentTileData apart from the static strip at the bottom
+// of the screen (below the scrolling section), which can use its own tile bank - see selectBottomTileBank()
+const uint8_t *isrTileData;
+const uint8_t *bottomTileData;
 
 KeyState keyState;
 uint16_t hiScore=1000;
@@ -135,6 +139,7 @@ void setScroll(uint8_t x, uint8_t y);
 void clearTileMap(const uint8_t charIX);
 void shiftTiles(int8_t offset,uint8_t fillTile);
 void selectTileBank(uint8_t ix);
+void selectBottomTileBank(uint8_t ix);
 
 
 // Implementations
@@ -192,7 +197,8 @@ ISR(TIMER1_COMPB_vect) {
     }
 
 		pScreenRam = screenRam+(screenRamRow*BYTES_PER_BUFFER_LINE); // point to first character (top left) in screenRam
-		fontSlice = currentTileData+(slice*256); // point to slice before first (top) slice of font pixels (top pixel of each 10 is just RVS cap)
+		isrTileData=currentTileData;
+		fontSlice = isrTileData+(slice*256); // point to slice before first (top) slice of font pixels (top pixel of each 10 is just RVS cap)
     displayLine=1;
 
 	} else {
@@ -202,7 +208,8 @@ ISR(TIMER1_COMPB_vect) {
     if(displayLine==bottomLineCompare){ // Note that displayLine is incremented in the ASM routine...
 
       slice = -1;
-      fontSlice=currentTileData-256;
+      isrTileData=bottomTileData;      // the strip at the bottom may use a different tile bank
+      fontSlice=isrTileData-256;
       screenRamRow=screenRamRowBottomReset;
       pScreenRam=pScreenRamBottomReset;
       
@@ -228,7 +235,8 @@ ISR(TIMER1_COMPB_vect) {
       screenRamRow=screenRamRowTopReset;
       //screenRamRow=tileRowStart+((vScroll>>3)%(CHARACTER_ROWS-tileRowStart));
       pScreenRam = screenRam+(screenRamRow*BYTES_PER_BUFFER_LINE); // point to first character (top left) in screenRam
-		  fontSlice = currentTileData+(slice*256); // point to slice before first (top) slice of font pixels (top pixel of each 10 is just RVS cap)
+		  isrTileData=currentTileData;
+		  fontSlice = isrTileData+(slice*256); // point to slice before first (top) slice of font pixels (top pixel of each 10 is just RVS cap)
     }
 
     if(displayLine==BOTTOM_DISPLAY_LINE){
@@ -239,7 +247,7 @@ ISR(TIMER1_COMPB_vect) {
     }else if(++slice==PIXELS_PER_CHARACTER){
 
         slice = 0;
-        fontSlice=currentTileData+0;
+        fontSlice=isrTileData+0;
         if(++screenRamRow==CHARACTER_ROWS){
             screenRamRow=tileRowStart;
             pScreenRam=screenRam+(screenRamRow*BYTES_PER_BUFFER_LINE);
@@ -429,7 +437,7 @@ uint8_t readInput(){
 /// @return 1 if sprite is "live", otherwise zero (not going to be displayed)
 uint8_t processASprite(uint8_t destIX,uint8_t srcIX, DefType dt){
   if(spriteData[srcIX].defIX==255){
-    processedSprite[destIX].xByte=0;
+    processedSprite[destIX].xByte=BYTES_PER_RASTER;     // (just off the right hand edge: the renderer stores a hidden sprite's blank data over everything at its position)
     processedSprite[destIX].yLine=destIX*16;
     for(uint8_t i=0;i<48;i++){
       processedSprite[destIX].sData[i]=0;
@@ -750,6 +758,17 @@ void shiftTiles(int8_t offset,uint8_t fillTile){
  */
 void selectTileBank(uint8_t ix){
   currentTileData=tileData+(8*256*ix);
+  bottomTileData=currentTileData;     // (the bottom strip uses the same bank unless selectBottomTileBank() is called afterwards)
+}
+
+/**
+ * @brief Use a different tile bank for the static strip at the bottom of the screen (the part below the scrolling section).
+ * Call it after selectTileBank(), which resets it to the same bank. The switch is just a pointer swap in the video interrupt.
+ *
+ * @param ix The tile bank for the bottom strip
+ */
+void selectBottomTileBank(uint8_t ix){
+  bottomTileData=tileData+(8*256*ix);
 }
 
 #endif

@@ -32,9 +32,10 @@
 
 #define SFX_NONE        0
 #define SFX_CHOMP       1
-#define SFX_FRUIT       2
-#define SFX_GHOST       3
-#define SFX_DEATH       4     // takes over both channels
+#define SFX_PELLET      2     // a power pellet: three times as long as a chomp, and a dot eaten straight after cannot cut it short
+#define SFX_FRUIT       3
+#define SFX_GHOST       4
+#define SFX_DEATH       5     // takes over both channels
 
 void sfxStart(uint8_t type, uint8_t frames){
   // A new sound only interrupts one of lower or equal priority
@@ -47,7 +48,7 @@ void sfxStart(uint8_t type, uint8_t frames){
 
 void audioInit(){
   setPWMChannelBaseSetting(0,_BV(CS02));   // /256
-  setPWMChannelBaseSetting(1,FREQ128);
+  setPWMChannelBaseSetting(1,FREQ256);   // /256, so channel 1 reaches down to about 120Hz
   setPWMChannelFreq(0,0);
   setPWMChannelFreq(1,0);
   sfxTimer=0;
@@ -71,9 +72,11 @@ void audioUpdate(){
       case SFX_CHOMP:
         // Alternating rising and falling chirps, so eating dots goes "waka waka"
         ocr=(sfxToggle?(88-(f*8)):(60+(f*8)));
-        if(sfxLow){
-          ocr=(ocr<<1)+1;   // power pellets sound an octave lower
-        }
+      break;
+      case SFX_PELLET:
+        // Three times as long as a chomp, an octave lower: the pitch slides up, then down, then up again (a smaller OCR value is a
+        // higher note, so "up" counts the value down)
+        ocr=(((f&4)?(64+((f&3)*8)):(88-((f&3)*8)))<<1)+1;
       break;
       case SFX_FRUIT:
         ocr=(f<10)?50:34;
@@ -98,7 +101,21 @@ void audioUpdate(){
     setPWMChannelFreq(1,0);
     return;
   }
-  bool eyes=false,scared=false,out=false;
+  if(extraLifeTimer){
+    // The extra life jingle: a run of dings, each a short high note that drops a little, with a one frame gap after it. The last
+    // one has no gap and is held on for a couple of frames more
+    uint16_t f=EXTRA_LIFE_TOTAL-extraLifeTimer;
+    uint8_t k=f%EXTRA_LIFE_DING_FRAMES;
+    --extraLifeTimer;
+    uint8_t lastNote=14+((EXTRA_LIFE_DING_FRAMES-2)>>1);
+    if(f>=(EXTRA_LIFE_TOTAL-EXTRA_LIFE_HOLD-1)){
+      setPWMChannelFreq(1,lastNote);
+    }else{
+      setPWMChannelFreq(1,(k<(EXTRA_LIFE_DING_FRAMES-1))?(14+(k>>1)):0);
+    }
+    return;
+  }
+  bool eyes=false,scared=false;
   for(uint8_t i=0;i<NUM_GHOSTS;i++){
     switch(ghosts[i].state){
       case GS_EYES:
@@ -112,19 +129,18 @@ void audioUpdate(){
       case GS_SCARED:
         scared=true;
       break;
-      case GS_AWAKE:
-        out=true;
-      break;
     }
   }
   if(eyes){
-    ocr=(tick&2)?36:52;
+    ocr=(tick&2)?17:25;
   }else if(scared){
-    ocr=150-((tick&7)*5);
-  }else if(out){
-    // Siren: slowly rising and falling
-    uint8_t p=tick&63;
-    ocr=150-(((p<32)?p:(63-p))*2);
+    ocr=75-((tick&7)*2);
+  }else{
+    // The siren, always there while the ghosts are not frightened: a low "whoo, whoo" as the pitch glides up and down.
+    // It cycles faster the further into the game you are (as the ghosts get faster)
+    sirenPhase+=SIREN_SPEED_BASE+(mapSeq<SIREN_SPEED_MAX?mapSeq:SIREN_SPEED_MAX);
+    uint8_t t=(sirenPhase<128)?sirenPhase:(255-sirenPhase);    // a triangle wave, 0 to 127
+    ocr=150-(t>>1);                                            // about 207Hz up to 355Hz
   }
   setPWMChannelFreq(1,ocr);
 }
@@ -133,27 +149,27 @@ void audioUpdate(){
 // Melody on channel 0 and a simple bass line on channel 1. Each entry is a timer value for the channel (0 = silent)
 // and a length in frames.
 
-#define INTRO_NOTES     30
+#define INTRO_NOTES     29
 
 const uint8_t introMelody[INTRO_NOTES] PROGMEM={
   62,31,41,49,31,41,49,
   59,29,39,46,29,39,46,
   62,31,41,49,31,41,49,
-  49,46,44,41,39,37,35,31,
+  49,46,44,41,39,37,31,
   0
 };
 const uint8_t introBass[INTRO_NOTES] PROGMEM={
   252,252,252,252,252,252,252,
   238,238,238,238,238,238,238,
   252,252,252,252,252,252,252,
-  200,200,200,189,189,189,178,168,
+  200,200,200,189,189,189,168,
   0
 };
 const uint8_t introLen[INTRO_NOTES] PROGMEM={
   6,6,6,6,6,6,12,
   6,6,6,6,6,6,12,
   6,6,6,6,6,6,12,
-  6,6,6,6,6,6,6,18,
+  6,6,6,6,6,6,18,
   30
 };
 

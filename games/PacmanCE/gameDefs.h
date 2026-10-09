@@ -27,9 +27,23 @@
 // Length of a game in seconds. The game ends when this runs out, or all lives are lost.
 #define GAME_SECONDS                300
 #define START_LIVES                 3
+#define MAX_LIVES                   5      // (the HUD has room for this many life icons)
+#define LIFE_CHOMP_FRAMES           8      // the life icons at the bottom change mouth shape this often
 
-// Frames (50 per second) that ghosts stay frightened after a power pellet
-#define SCARE_FRAMES                400
+// An extra life is awarded every EXTRA_LIFE_SCORE points, with a jingle of dings on the ghost sound channel
+#define EXTRA_LIFE_SCORE            20000
+#define EXTRA_LIFE_DING_FRAMES      6       // frames for each ding (the last frame of each is a gap)
+#define EXTRA_LIFE_DINGS            5       // dings in a group
+#define EXTRA_LIFE_FRAMES           (EXTRA_LIFE_DING_FRAMES*EXTRA_LIFE_DINGS)
+#define EXTRA_LIFE_HOLD             2       // the very last note is held on for this many extra frames
+#define EXTRA_LIFE_REPEATS          2      // how many groups play (set to 1 once the jingle has been tuned)
+#define EXTRA_LIFE_TOTAL            ((uint16_t)EXTRA_LIFE_FRAMES*EXTRA_LIFE_REPEATS+EXTRA_LIFE_HOLD)   // length of the whole jingle
+
+// Frames (50 per second) that ghosts stay frightened after a power pellet at the start of a game. Each fruit eaten (each half maze
+// replaced) shortens it by SCARE_REDUCTION, down to a minimum of SCARE_MIN_FRAMES
+#define SCARE_FRAMES                400      // 8 seconds
+#define SCARE_REDUCTION             25       // half a second less each time
+#define SCARE_MIN_FRAMES            225      // but never less than 4.5 seconds
 
 
 #define SCORE_DOT                   10
@@ -143,11 +157,34 @@
 #define BAND_ROWS                   7
 #define BAND_SCREEN_ROW             14      // first screen tile row of the band
 
+// The ghost siren sweeps up and down faster as the game goes on: phase steps (out of 256) per frame is
+// SIREN_SPEED_BASE plus the number of mazes used so far, up to SIREN_SPEED_MAX of them
+#define SIREN_SPEED_BASE            12     // 12 is about 0.85 seconds per "whoo" at the start, 22 about 0.45 at the fastest
+#define SIREN_SPEED_MAX             10
+
 // How long the demo runs before it gives way to the high scores (frames)
 #define DEMO_FRAMES                 500
-#define RANK_HOLD_FRAMES            220
+// The parade round the high score table (Pac-Man, then the four ghosts) runs along a path in the margins round it, at this many
+// pixels a frame, with this many pixels between each character. It ends when the last ghost has gone off the right hand side
+#define PARADE_SPEED                3
+#define PARADE_SPACING              24
+#define PARADE_LEFT                 8       // x of the run up the left side, and of the run down the right side
+#define PARADE_RIGHT                206
+#define PARADE_TOP                  26       // y of the run across between the title and the table, and along the bottom
+#define PARADE_BOTTOM               208
+#define PARADE_END                  (((256-PARADE_LEFT)+(PARADE_BOTTOM-PARADE_TOP)+(PARADE_RIGHT-PARADE_LEFT)+(PARADE_BOTTOM-PARADE_TOP)+(256-PARADE_RIGHT))+(PARADE_SPACING*4))
+// Testing: 1 starts the game on the high score page (it goes on to the title screen afterwards as usual)
+#define START_ON_RANKING            0
 #define RANK_BLINK_FRAMES           3       // each high score entry blinks off for this many frames (50 per second, so 5 = 100ms) in turn
-#define GAMEOVER_FRAMES             150
+#define RESET_MESSAGE_FRAMES        100      // "HIGH SCORES RESET" (shown when they are cleared at start-up) stays up for this long
+#define GAMEOVER_FRAMES             250      // (must stay under 255 - it is counted by "tick")
+
+// GAME OVER: the two words glide in from opposite sides (GAME from the left, OVER from the right), taking GAMEOVER_GLIDE_FRAMES
+// to ease into place, with OVER starting GAMEOVER_WORD_DELAY frames after GAME. Both bob on a sine wave all the time (64 steps to
+// a cycle), half a cycle apart, moving on one step every GAMEOVER_WAVE_FRAMES frames: 1 is a smooth wave about 1.3 seconds long
+#define GAMEOVER_GLIDE_FRAMES       48
+#define GAMEOVER_WORD_DELAY         0
+#define GAMEOVER_WAVE_FRAMES        2
 
 // ---- High scores -----------------------------------------------------------------------------------------------
 #define NUM_SCORES                  10

@@ -87,6 +87,8 @@ uint8_t tick;
 uint16_t rng=0xACE1;
 uint8_t hudDirty;
 uint8_t freezeTimer;
+uint8_t lifeAwards;      // extra lives awarded so far this game (one for each 20000 points)
+uint16_t extraLifeTimer; // frames left of the extra life jingle (0 = not playing)
 
 // The score for an eaten ghost, flying up to the score display: frames left, which score it is (0-7), and where it started
 uint8_t scoreFlyTimer,scoreFlyIdx,scoreFlyX,scoreFlyY;
@@ -105,7 +107,8 @@ uint16_t dotsEaten;     // since the last death
 uint8_t introIx,introTimer;
 
 // Sound effect on channel 0
-uint8_t sfxType,sfxTimer,sfxFrame,sfxToggle,sfxLow;
+uint8_t sfxType,sfxTimer,sfxFrame,sfxToggle;
+uint8_t sirenPhase;     // position in the ghost siren sweep
 
 
 // Which thing the scrolling part of the tilemap is currently showing, and how big its world is
@@ -118,9 +121,11 @@ uint8_t attractPhase;
 uint16_t attractTimer;
 uint8_t bandScene;
 uint8_t demoMode;
+uint8_t resetMessage;    // the high scores were just cleared at start-up, so say so
 uint8_t screenAfterRank;
 uint8_t rankBlank=255;   // high score entry that is currently blinked off (255 = none)
 uint8_t rankFrame;       // frames since the blink last moved on
+int16_t paradeS;         // how far along its path the leader of the high score parade (Pac-Man) is, in pixels
 
 // Wave that replaces a half map: columns the wave has turned into the new maze are shown "filled in" until the
 // ripple that follows it turns them back
