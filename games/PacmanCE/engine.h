@@ -1,4 +1,3 @@
-#line 1 "C:\\Users\\ScottPorter\\Documents\\git projects\\ManicMinerForArduinoUNO\\games\\Scramble\\Scramble\\engine.h"
 /*
  
  This file is part of the Arduino UNO game engine.
@@ -31,17 +30,38 @@ typedef struct ProcessedSprite{
     uint8_t sData[3*16]; // Graphical data, pre-shifted ready to display on scanlines
 } ProcessedSprite;
 
+/// @brief Struct for sprite data used by game. This can be updated at any time before the end of the frame
 typedef struct SpriteData{
+    /// @brief y Position for sprite
     uint8_t y;
+    /// @brief x position for sprite
     uint8_t x;
+    /// @brief Sprite graphic definition index
     uint8_t defIX;
+    /// @brief Sprite mask definition index (used to remove background before sprite graphic is overlaid)
+    uint8_t maskIX;
 } SpriteData;
 
+/// @brief Current state of buttons/joypad
 typedef struct KeyState{
+    /// @brief Bitfield with button and D-pad states
     uint8_t current;
+    /// @brief Previous states, used to ascertain what changed in the current frame
     uint8_t last;
+    /// @brief bitfield with buttons and D-pad changes since the previous frame
     uint8_t changed;
 } KeyState;
+
+typedef enum MergeType{
+  MERGE_OR,
+  MERGE_XOR,
+  MERGE_AND
+} MergeType;
+
+typedef enum DefType{
+  DEFTYPE_GRAPHIC,
+  DEFTYPE_MASK
+} DefType;
 
 extern "C" { void processSprite(ProcessedSprite *dest, const uint8_t *spriteDefRef, const SpriteData *spriteData); }
 extern "C" { void renderScanline(volatile uint8_t *pScreenRam, volatile const uint8_t *fontSlice); }
@@ -57,17 +77,19 @@ volatile const uint8_t *fontSlice;
 volatile uint8_t currentFrame=0;  // Increments every frame, automatically wraps back to 0
 volatile uint8_t lastFrame=0;
 volatile uint8_t displayLine=0;
-volatile uint8_t collisionBits=0; // This is set to non-zero if sprite at index 8 has collided with another sprite during the last frame (pixel based collision detection)
 volatile uint8_t *pScreenRam;
 volatile uint8_t spriteLine[BYTES_PER_RASTER+2]__attribute__((aligned(64))) ={0};
 volatile uint16_t tcnt;
 
 const uint8_t *spriteDefRef;  // ASM uses this pointer to the const sprite data array - this gives the possibility of bank switching sprites if there are more than 256 (unlikely as that is!)
-uint16_t hScroll=0;
-uint16_t vScroll=0;
+uint8_t hScroll=0;
+uint8_t vScroll=0;
 uint8_t tileRowStart=0;
 uint16_t topLineCompare=0;     // Set using setTileRowSplit() below
 uint16_t bottomLineCompare=600;     // Set using setTileRowSplit() below
+uint8_t scrollingSectionHeight=248; // Height in pixels of scrolling area. By default this will be the screen height-8 (one char row is hidden)
+uint8_t topSectionRows=0;
+uint8_t bottomSectionRows=0;
 uint8_t hScrollSMask=0;
 uint8_t hScrollEMask=0;
 uint8_t hScrollSMaskReset=0;
@@ -85,9 +107,9 @@ uint16_t waitFrames=0;
 
 // y,x,defIX
 SpriteData spriteData[NUM_SPRITES]={0};
-ProcessedSprite processedSprite[NUM_SPRITES]={0};
+// One extra processed sprite slot, used to merge sprites etc
+ProcessedSprite processedSprite[NUM_SPRITES+1]={0};
 uint8_t screenRam[SCREEN_RAM_SIZE]={0};
-
 
 
 // Declarations
@@ -97,16 +119,22 @@ void setPWMChannelFreq(const uint8_t ix,const uint8_t freq);
 void setPWMChannelBaseSetting(const uint8_t ix, const uint8_t baseSetting);
 inline void waitFrame();
 uint8_t readInput();
+
+uint8_t processASprite(uint8_t destIX,uint8_t srcIX, DefType dt);
 void processSprites();
+void mergeSprites(ProcessedSprite *dst, ProcessedSprite *src, MergeType mergeType);
+void copyBackgroundToSprite(uint8_t spriteIX);
+void processFrame();
 void setSpritePos(uint8_t ix,uint8_t x, uint8_t y);
 void resetSprite(uint8_t ix);
 void resetSprites(void);
-void setSpriteDef(uint8_t ix, uint8_t defIX);
+void setSpriteDef(uint8_t ix, uint8_t defIX, uint8_t maskIX);
+
 void setTileRowSplit(uint16_t topY, uint16_t bottomY);
 void setScroll(uint8_t x, uint8_t y);
 void clearTileMap(const uint8_t charIX);
 void shiftTiles(int8_t offset,uint8_t fillTile);
-
+void selectTileBank(uint8_t ix);
 
 
 // Implementations
@@ -163,7 +191,6 @@ ISR(TIMER1_COMPB_vect) {
       screenRamRow=0;
     }
 
-    collisionBits=0;  // Reset collisionBit flag register
 		pScreenRam = screenRam+(screenRamRow*BYTES_PER_BUFFER_LINE); // point to first character (top left) in screenRam
 		fontSlice = currentTileData+(slice*256); // point to slice before first (top) slice of font pixels (top pixel of each 10 is just RVS cap)
     displayLine=1;
@@ -284,6 +311,7 @@ void engineSetup(){
   TIMSK0 &= ~_BV(TOIE0); // disable timer0 - stops millis() working but necessary to stop timer 0 interrupts spoiling display timing
 
   readInput();
+  setScroll(0,0);
 }
 
 /**
@@ -394,22 +422,186 @@ uint8_t readInput(){
 
 // Sprite funcs
 
+/// @brief Creates a pre-shifted processed sprite in the processedSprite array, which can be used to merge with another sprite, or drawn to the line buffer during the render stage
+/// @param destIX The index in the processedSprite array for the result
+/// @param srcIX The index in the source spriteData array used to create the result
+/// @param dt The type of drawing operation to perform - either the normal graphic (defIX) or mask (maskIX) from the spriteData
+/// @return 1 if sprite is "live", otherwise zero (not going to be displayed)
+uint8_t processASprite(uint8_t destIX,uint8_t srcIX, DefType dt){
+  if(spriteData[srcIX].defIX==255){
+    processedSprite[destIX].xByte=0;
+    processedSprite[destIX].yLine=destIX*16;
+    for(uint8_t i=0;i<48;i++){
+      processedSprite[destIX].sData[i]=0;
+    }
+    return 0;
+  }
+  uint8_t tmp;
+  if(dt==DEFTYPE_MASK){
+    tmp=spriteData[srcIX].defIX;
+    spriteData[srcIX].defIX=spriteData[srcIX].maskIX;
+  }
+  processSprite(&processedSprite[destIX], spriteDef, &spriteData[srcIX]);
+  if(dt==DEFTYPE_MASK){
+    // Invert all graphic data if a mask, to make subsequent operations faster
+    uint8_t *p=processedSprite[destIX].sData;
+    for(uint8_t n=0;n<48;n++){
+      *p=~(*p);
+      ++p;
+    }
+    spriteData[srcIX].defIX=tmp;
+  }
+  return 1;
+}
+
 /**
  * @brief After changing sprite positions or definitions ready for next frame, this must be called to create the buffers used by the renderer to draw sprite data to the correct positions
  * It should be called exactly once per frame, after all sprites have been positioned, and their graphical definitions set.
  */
 void processSprites(){
     for(uint8_t n=0;n<NUM_SPRITES;n++){
-      if(spriteData[n].defIX==255){
-        for(uint8_t i=0;i<48;i++){
-          processedSprite[n].sData[i]=0;
-          processedSprite[n].xByte=0;
-          processedSprite[n].yLine=n*16;
+      processASprite(n,n,DEFTYPE_GRAPHIC);
+    }
+}
+
+void mergeSprites(ProcessedSprite *dst, ProcessedSprite *src, MergeType mergeType){
+
+  // If sprites have no overlap, skip out early  
+  int16_t offset=dst->xByte-src->xByte;
+  if( (offset>2) || (offset<-2) ){
+    return;
+  }
+
+  offset=dst->yLine-src->yLine;
+  if( (offset>15) || (offset<-15) ){
+    return;
+  }
+
+  uint8_t *srcByte=src->sData;
+  for(uint8_t x=0;x<3;x++){                   // byte column within src sprite
+
+    uint8_t dByte=(src->xByte-dst->xByte)+x;  // Byte column within dst sprite
+    if(dByte>2){
+      srcByte+=16;
+      continue;
+    }
+
+    uint8_t offset=src->yLine-dst->yLine;
+    dByte*=16;
+    uint8_t *dstByte=dst->sData+dByte;
+    if(mergeType==MERGE_OR){
+      for(uint8_t y=0;y<16;y++){
+        if( offset<16 ){
+          *(dstByte+offset)|=*srcByte;
         }
-      }else{
-        processSprite(&processedSprite[n], spriteDef, &spriteData[n]);
+        ++srcByte;
+        ++offset;
+      }
+    }else if(mergeType==MERGE_XOR){
+      for(uint8_t y=0;y<16;y++){
+        if( offset<16 ){
+          *(dstByte+offset)&=*srcByte;
+        }
+        ++srcByte;
+        ++offset;
       }
     }
+
+  }
+
+}
+
+/**
+ * @brief Fill a processedSprite entry with the current background under that sprite
+ * 
+ * @param spriteIX Index of the sprite
+ */
+void copyBackgroundToSprite(uint8_t spriteIX){
+  // Processed sprite data is planar (optimised for rasterising), so bytes 0,16,32 are the top row, then 1,17,33 etc
+  uint8_t sXb=(((hScroll&0x07)+spriteData[spriteIX].x)>>3);
+  uint16_t sY=spriteData[spriteIX].y;
+  processedSprite[spriteIX].xByte=sXb;
+  processedSprite[spriteIX].yLine=sY;
+  ++sY;
+  sY+=vScroll;
+  uint8_t firstRow=((sY>>3)+bottomSectionRows);
+  uint8_t scrollingSectionChars=(scrollingSectionHeight/PIXELS_PER_CHARACTER);
+  if(firstRow>(CHARACTER_ROWS-1)){
+    firstRow-=scrollingSectionChars;
+  }
+
+  uint8_t *p=screenRam+(BYTES_PER_BUFFER_LINE*firstRow)+sXb;
+  uint8_t byteLine=(sY&0x07);
+  uint8_t *d=processedSprite[spriteIX].sData;
+  const uint8_t *sp=(currentTileData+(256*byteLine));
+
+  for(uint8_t yLine=0;yLine<16;yLine++){
+
+    // Add a row to the processedSprite planar data
+    *d=pgm_read_byte(sp+(*p));
+    *(d+16)=pgm_read_byte(sp+(*(p+1)));
+    *(d+32)=pgm_read_byte(sp+(*(p+2)));
+    ++d;
+
+    sp+=256;
+
+    if(++byteLine==8){
+      byteLine=0;
+      sp=currentTileData;
+      if(++firstRow>(CHARACTER_ROWS-1)){
+        firstRow=0;
+        p=screenRam+(BYTES_PER_BUFFER_LINE*(bottomSectionRows+topSectionRows))+sXb;
+      }else{
+        p+=BYTES_PER_BUFFER_LINE;
+      }
+    }
+
+  }
+
+}
+
+void processFrame(){
+  
+  // Copy backgrounds to all active sprites
+  for(uint8_t n=0;n<NUM_SPRITES;n++){
+    if(spriteData[n].defIX==255){
+      processASprite(n,n,DEFTYPE_GRAPHIC);  // Just blanks it out and positions it off-screen. No need to do anything else with it this frame.
+      continue;
+    }
+    copyBackgroundToSprite(n);
+  }
+  
+  // Now generate the graphic and mask data for each sprite and copy it over to that sprite and all overlapping sprites
+  ProcessedSprite *src=processedSprite+NUM_SPRITES;
+  for(int8_t spriteLow=0;spriteLow<NUM_SPRITES;spriteLow++){
+    if(spriteData[spriteLow].defIX<255){
+      
+      // If the maskIX is 255, then no mask is applied
+      if(spriteData[spriteLow].maskIX<255){
+        processASprite(NUM_SPRITES,spriteLow,DEFTYPE_MASK);
+        for(uint8_t n=0;n<48;n++){
+          processedSprite[spriteLow].sData[n]&=processedSprite[NUM_SPRITES].sData[n];
+        }
+        for(int8_t spriteHigh=spriteLow+1;spriteHigh<NUM_SPRITES;spriteHigh++){
+          if(spriteData[spriteHigh].defIX<255){
+            mergeSprites(processedSprite+spriteHigh,src,MERGE_XOR);
+          }
+        }
+      }
+
+      processASprite(NUM_SPRITES,spriteLow,DEFTYPE_GRAPHIC);
+      for(uint8_t n=0;n<48;n++){
+        processedSprite[spriteLow].sData[n]|=processedSprite[NUM_SPRITES].sData[n];
+      }
+      for(int8_t spriteHigh=spriteLow+1;spriteHigh<NUM_SPRITES;spriteHigh++){
+        if(spriteData[spriteHigh].defIX<255){
+          mergeSprites(processedSprite+spriteHigh,src,MERGE_OR);
+        }
+      }
+
+    }
+  }
+
 }
 
 /**
@@ -426,7 +618,7 @@ void setSpritePos(uint8_t ix,uint8_t x, uint8_t y){
 
 void resetSprite(uint8_t ix){
     setSpritePos(ix,255,(ix*16)+50);
-    setSpriteDef(ix,255);
+    setSpriteDef(ix,255,255);
 }
 
 /**
@@ -444,9 +636,11 @@ void resetSprites(void){
  * 
  * @param ix Index of sprite
  * @param defIX The graphical definition data to use
+ * @param maskIX The bitmask definition to use
  */
-void setSpriteDef(uint8_t ix, uint8_t defIX){
+void setSpriteDef(uint8_t ix, uint8_t defIX, uint8_t maskIX){
     spriteData[ix].defIX=defIX;
+    spriteData[ix].maskIX=maskIX;
 }
 
 
@@ -464,12 +658,12 @@ void setSpriteDef(uint8_t ix, uint8_t defIX){
 void setTileRowSplit(uint16_t topY,uint16_t bottomY){
     topLineCompare=topY+1;
     bottomLineCompare=bottomY;
+    scrollingSectionHeight=((bottomY<248?bottomY:248)-topY)+8;
     screenRamRowBottomReset=(topLineCompare/PIXELS_PER_CHARACTER);
-    tileRowStart=CHARACTER_ROWS-(bottomLineCompare/PIXELS_PER_CHARACTER);
-    tileRowStart+=(screenRamRowBottomReset-1);
-
+    topSectionRows=(topLineCompare/PIXELS_PER_CHARACTER);
+    bottomSectionRows=CHARACTER_ROWS-(bottomLineCompare/PIXELS_PER_CHARACTER)-1;
+    tileRowStart=(screenRamRowBottomReset-1)+bottomSectionRows+1;
     pScreenRamBottomReset=screenRam+(screenRamRowBottomReset*BYTES_PER_BUFFER_LINE);
-
 }
 
 /**
@@ -547,6 +741,15 @@ void shiftTiles(int8_t offset,uint8_t fillTile){
       }
     }
   }
+}
+
+/**
+ * @brief Select the tile bank - this is the "font" used for the tilemap. Can be changed per frame if needed for various effects
+ * 
+ * @param ix The tile bank to use when rendering the next frame to the screen
+ */
+void selectTileBank(uint8_t ix){
+  currentTileData=tileData+(8*256*ix);
 }
 
 #endif
