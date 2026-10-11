@@ -60,8 +60,9 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 ## YouTube:
  
 [![Manic Miner on Arduino UNO](https://img.youtube.com/vi/dm_dUSeIqC4/0.jpg)](https://www.youtube.com/watch?v=dm_dUSeIqC4)
-[![Manic Miner on Arduino UNO](https://img.youtube.com/vi/EYmaM6yEfL8/0.jpg)](https://www.youtube.com/watch?v=EYmaM6yEfL8)
-[![Manic Miner on Arduino UNO](https://img.youtube.com/vi/bSSh6-Lymfg/0.jpg)](https://www.youtube.com/watch?v=bSSh6-Lymfg)
+[![Scramble on Arduino UNO](https://img.youtube.com/vi/EYmaM6yEfL8/0.jpg)](https://www.youtube.com/watch?v=EYmaM6yEfL8)
+[![Space Invaders on Arduino UNO](https://img.youtube.com/vi/bSSh6-Lymfg/0.jpg)](https://www.youtube.com/watch?v=bSSh6-Lymfg)
+[![Pacman Championship Edition on Arduino UNO](https://img.youtube.com/vi/qakuvavLC40/0.jpg)](https://www.youtube.com/watch?v=qakuvavLC40)
 
 ## Screen-shots:
 
