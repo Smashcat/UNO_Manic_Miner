@@ -111,37 +111,10 @@ void clearBlock(uint8_t startX, uint8_t startY, uint8_t len){
   }
 }
 
-// Double height text for the HUD: each character is a top tile and a bottom tile
-uint8_t bigIndex(char c){
-  if(c>='0' && c<='9') return c-'0';
-  if(c>='A' && c<='Z') return 10+(c-'A');
-  if(c==':') return 36;
-  return 255;
-}
-
-void drawBigChar(char c, uint8_t x, uint8_t y){
-  uint8_t i=bigIndex(c);
-  if(i==255){
-    drawChar(BLANK_TILE,x,y);
-    drawChar(BLANK_TILE,x,y+1);
-    return;
-  }
-  drawChar(pgm_read_byte(&bigFontTop[i]),x,y);
-  drawChar(pgm_read_byte(&bigFontBot[i]),x,y+1);
-}
-
-void drawBigStr_P(const char *s, uint8_t x, uint8_t y){
-  char c;
-  while((c=pgm_read_byte(s++))){
-    drawBigChar(c,x++,y);
-  }
-}
-
-void drawBigNum(uint32_t num, uint8_t x, uint8_t y, uint8_t digits){
-  for(uint8_t i=digits;i>0;i--){
-    drawBigChar('0'+(num%10),x+i-1,y);
-    num/=10;
-  }
+// Double height characters for the HUD: each is a top tile and a bottom tile (the tiles come from hud-font.png)
+void drawBigPair(uint8_t top, uint8_t x, uint8_t y){
+  drawChar(top,x,y);
+  drawChar(top+1,x,y+1);
 }
 
 /// @brief The lives: 16x16 Pac-Men, chomping (the mouth changes every LIFE_CHOMP_FRAMES frames)
@@ -157,18 +130,112 @@ void drawLives(){
   }
 }
 
+// ---- Score and time digits: they ripple when they change ----------------------------------------------------------
+// Each digit has three versions (the same digit 0, 1 or 2 pixels down) and normally sits at version 1. When the score goes up, or the
+// time ticks, a ripple runs along the digits from the right: each digit in turn (one frame after the one to its right) goes through the
+// versions in rippleSeq and then settles back at version 1. A change that arrives while a ripple is running is remembered, and starts a
+// new ripple when the current one has finished.
+// Both numbers are lists of "digits" (value 10 is the colon of the time): group 0 is the score and group 1 is the time.
+
+const uint8_t rippleSeq[RIPPLE_STEPS] PROGMEM={0,1,2,0};
+
+/// @brief Draw the digits of a group (0 = score, 1 = time), with the ripple that is running on them (if there is one)
+void drawGroup(uint8_t group){
+  uint8_t n=group?4:SCORE_DIGITS;
+  uint8_t x=group?(TIME_X+TIME_TITLE_W):SCORE_X;
+  uint8_t t=rippleT[group];
+  uint32_t v=score;
+  if(group){
+    uint16_t secs=(framesLeft+49)/50;
+    v=((uint32_t)(secs/60)*100)+(secs%60);       // (the digits of the time: minutes, a gap for the colon, then seconds)
+  }
+  for(uint8_t i=n;i>0;){
+    --i;
+    uint8_t d=10;
+    if(!group || i!=1){
+      d=v%10;
+      v/=10;
+    }
+    // This digit's ripple starts one delay after the digit to its right
+    uint8_t version=1;
+    int8_t s=t-((n-1-i)*RIPPLE_DIGIT_DELAY);
+    if(t!=RIPPLE_NONE && s>=0){
+      uint8_t step=0;
+      while(s>=RIPPLE_STEP_FRAMES){
+        s-=RIPPLE_STEP_FRAMES;
+        ++step;
+      }
+      if(step<RIPPLE_STEPS){
+        version=pgm_read_byte(&rippleSeq[step]);
+      }
+    }
+    uint8_t k=(version*11)+d;
+    drawBigPair(HUD_NUM_TILES+(k*2),x+i,1);
+  }
+}
+
+/// @brief Draw a heading that is "w" tiles wide and two high (a pair of tiles for each column)
+void drawHeading(uint8_t firstTile, uint8_t w, uint8_t x){
+  for(uint8_t c=0;c<w;c++){
+    drawBigPair(firstTile+(c*2),x+c,1);
+  }
+}
+
+/// @brief Once a frame: start new ripples that have been asked for, and move the running ones on
+void rippleUpdate(){
+  if(score!=scoreSeen){
+    scoreSeen=score;
+    rippleFlag[0]=1;
+  }
+  for(uint8_t g=0;g<2;g++){
+    uint8_t redraw=(rippleT[g]!=RIPPLE_NONE);
+    if(redraw){
+      if(++rippleT[g]>=(((g?4:SCORE_DIGITS)-1)*RIPPLE_DIGIT_DELAY)+(RIPPLE_STEPS*RIPPLE_STEP_FRAMES)){
+        rippleT[g]=RIPPLE_NONE;
+      }
+    }else if(rippleFlag[g]){
+      rippleFlag[g]=0;
+      rippleT[g]=0;
+      redraw=1;
+    }
+    if(redraw){
+      drawGroup(g);
+    }
+  }
+}
+
+/// @brief Show (on=1) or clear (on=0) the READY picture in the middle of the bottom strip
+void showReady(uint8_t on){
+  for(uint8_t c=0;c<READY_W;c++){
+    if(on){
+      drawBigPair(HUD_READY_TILES+(c*2),READY_X+c,READY_ROW);
+    }else{
+      drawChar(BLANK_TILE,READY_X+c,READY_ROW);
+      drawChar(BLANK_TILE,READY_X+c,READY_ROW+1);
+    }
+  }
+}
+
+/// @brief Show (on=1) or clear (on=0) the DEMO picture in the middle of the bottom strip
+void showDemo(uint8_t on){
+  for(uint8_t c=0;c<DEMO_W;c++){
+    if(on){
+      drawBigPair(HUD_DEMO_TILES+(c*2),DEMO_X+c,READY_ROW);
+    }else{
+      drawChar(BLANK_TILE,DEMO_X+c,READY_ROW);
+      drawChar(BLANK_TILE,DEMO_X+c,READY_ROW+1);
+    }
+  }
+}
+
 void drawHud(){
-  drawBigStr_P(PSTR("SCORE"),1,1);
-  drawBigNum(score,7,1,6);
-  // The time finishes at the right hand edge of the screen
-  drawBigStr_P(PSTR("TIME"),23,1);
-  uint16_t secs=(framesLeft+49)/50;
-  drawBigNum(secs/60,28,1,1);
-  drawBigChar(':',29,1);
-  drawBigNum(secs%60,30,1,2);
+  drawHeading(HUD_SCORE_TILES,SCORE_TITLE_W,SCORE_TITLE_X);
+  drawGroup(0);
+  drawHeading(HUD_TIME_TILES,TIME_TITLE_W,TIME_X);
+  drawGroup(1);
   drawLives();
-  if(demoMode){
-    drawBigStr_P(PSTR("DEMO"),1,LIVES_ROW);
+  if(demoMode && !(tick&32)){
+    showDemo(1);       // (it flashes, in time with PRESS START BUTTON on the title screen: see gameLoop)
   }
   hudDirty=0;
 }
@@ -423,17 +490,35 @@ uint8_t rankTileAt(uint8_t col, uint8_t row){
   if(pc==7){
     return TILE_COLON;
   }
+  uint8_t real;     // the tile for this digit or letter, and where it comes in the ripple that fills in the entry (the digits, then the letters)
+  uint8_t j;
   if(pc>=9 && pc<16){
     uint32_t p=1;
-    for(uint8_t j=0;j<15-pc;j++){
+    for(uint8_t k=0;k<15-pc;k++){
       p*=10;
     }
-    return (scoreAt(i)/p)%10;
-  }
-  if(pc>=18 && pc<21){
+    real=(scoreAt(i)/p)%10;
+    j=pc-9;
+  }else if(pc>=18 && pc<21){
     uint8_t c=nameCharAt(i,pc-18);
-    return (c<26)?(TILE_A+c):BLANK_TILE;
+    real=(c<26)?(TILE_A+c):BLANK_TILE;
+    j=7+(pc-18);
+  }else{
+    return (pc==23)?TILE_PACICON:BLANK_TILE;
   }
+  // Each glyph shows a dash, then the squashed version, then the real one, one frame after the glyph to its left (and each entry starts a
+  // little after the one above it)
+  int16_t u=rankAnimT-(i*RANK_FILL_ROW_DELAY)-j;
+  if(u<0){
+    return BLANK_TILE;
+  }
+  if(u==0){
+    return TILE_DASH;
+  }
+  if(u==1 && real!=BLANK_TILE){
+    return RANK_SQUASH_TILES+real;
+  }
+  return real;
   if(pc==23){
     return TILE_PACICON;
   }
@@ -735,7 +820,7 @@ void updateGhosts(){
         else if(g->x>GATE_X){ --g->x; }
         else if(g->y>EXIT_Y){ --g->y; }
         else{
-          g->state=(scareTimer?GS_SCARED:GS_AWAKE);
+          g->state=(scareTimer && !g->calm)?GS_SCARED:GS_AWAKE;
           g->dir=DIR_UP;
         }
       continue;
@@ -899,6 +984,7 @@ void scareGhosts(){
   uint16_t cut=(uint16_t)fruitsEaten*SCARE_REDUCTION;
   scareTimer=(cut>=(SCARE_FRAMES-SCARE_MIN_FRAMES))?SCARE_MIN_FRAMES:(SCARE_FRAMES-cut);
   for(uint8_t i=0;i<NUM_GHOSTS;i++){
+    ghosts[i].calm=0;
     if(ghosts[i].state==GS_AWAKE){
       ghosts[i].state=GS_SCARED;
       ghosts[i].dir=(ghosts[i].dir+2)&3;
@@ -1022,6 +1108,7 @@ void checkCollisions(){
         freezeTimer=GHOST_EAT_FREEZE;
         g->state=GS_SCORE;
         g->timer=SCORE_FLIGHT;
+        g->calm=1;      // (not frightened again until another power pellet is eaten)
       }else{
         setState(dying);
         return;
@@ -1065,7 +1152,7 @@ void updateSprites(){
     uint8_t def;
     uint8_t mask=255;     // (255: use the mask that goes with the frame)
     uint8_t st=g->state;
-    if((st==GS_PEN || st==GS_LEAVING) && scareTimer){
+    if((st==GS_PEN || st==GS_LEAVING) && scareTimer && !g->calm){
       st=GS_SCARED;   // the power pellet frightens the ghosts waiting in the box too
     }
     if(!others){
@@ -1297,6 +1384,9 @@ void rankingStart(){
   paradeS=0;
   rankBlank=255;
   rankFrame=0;
+  rankAnimT=-1;      // (-1: the list has not started to fill in)
+  rankClock=0;
+  rankStepWait=RANK_FILL_FRAMES;
   scrollMode=SM_RANK;
   scrollW=RANK_W;
   scrollRows=31;
@@ -1357,13 +1447,43 @@ void rankRedrawEntry(uint8_t i){
   }
 }
 
+/// @brief Draw the glyphs of the entries that are changing on this frame of the ripple that fills in the list: only those three in each entry
+void rankFillStep(){
+  for(uint8_t i=0;i<NUM_SCORES;i++){
+    int16_t base=rankAnimT-(i*RANK_FILL_ROW_DELAY);
+    if(base<0 || base>=RANK_GLYPHS+2){
+      continue;
+    }
+    for(uint8_t j=0;j<RANK_GLYPHS;j++){
+      int16_t u=base-j;
+      if(u>=0 && u<=2){
+        uint8_t wc=33+((j<7)?(9+j):(11+j));      // (world column: the page starts at 32, and the list is a column in from that)
+        uint8_t sc=screenColumnOf(wc);
+        if(sc!=255){
+          screenRam[((tileRowStart+6+(i*2))*BYTES_PER_BUFFER_LINE)+sc]=rankTileAt(wc,6+(i*2));
+        }
+      }
+    }
+  }
+}
+
 void rankingLoop(){
   if(PRESSED_START){
     setState(ready);
     return;
   }
-  // Each entry in turn blinks off for half a second, working down the table and round again
-  if(++rankFrame>=RANK_BLINK_FRAMES){
+  // The list fills in: after RANK_FILL_START frames, the ripple moves on a step every RANK_FILL_FRAMES frames until it has finished
+  if(rankClock<RANK_FILL_START){
+    ++rankClock;
+  }else if(rankAnimT<RANK_FILL_END){
+    if(++rankStepWait>=RANK_FILL_FRAMES){
+      rankStepWait=0;
+      ++rankAnimT;
+      rankFillStep();
+    }
+  }
+  // Once it is filled in, each entry in turn blinks off, working down the table and round again
+  if(RANK_BLINK && rankAnimT>=RANK_FILL_END && ++rankFrame>=RANK_BLINK_FRAMES){
     rankFrame=0;
     uint8_t old=rankBlank;
     rankBlank=(rankBlank>=NUM_SCORES-1)?0:rankBlank+1;     // (255 + 1 wraps to 0 too, so the first blink is the top entry)
@@ -1564,7 +1684,7 @@ void gameOverSprites(){
     uint16_t e=(elapsed>=GAMEOVER_GLIDE_FRAMES)?255:pgm_read_byte(&easeTab[(elapsed*64)/GAMEOVER_GLIDE_FRAMES]);
     int16_t away=(int16_t)((256UL*(255-e))/255);           // how far from its place it still is: 256 pixels, then 0
     int16_t pos=word?(final2+away):(final1-away);
-    int8_t bob=(int8_t)pgm_read_byte(&waveTab[((tick/GAMEOVER_WAVE_FRAMES)+(word?32:0))&63]);
+    int8_t bob=(int8_t)pgm_read_byte(&waveTab[((tick/GAMEOVER_WAVE_FRAMES)+GAMEOVER_WAVE_PHASE+(word?32:0))&63]);
     uint8_t first=word?GAMEOVER_WORD1_SLICES:0;
     uint8_t count=word?(NUM_GAMEOVER_SPRITES-GAMEOVER_WORD1_SLICES):GAMEOVER_WORD1_SLICES;
     for(uint8_t j=0;j<count;j++){
@@ -1595,9 +1715,16 @@ void respawn(){
 }
 
 void startGame(){
+  scoresFlushAll();       // (the table in RAM shares its memory with the maze, so it has to be safely in the EEPROM first)
+  scoresCached=0;
   setLayoutGame();
   score=0;
   lives=START_LIVES;
+  scoreSeen=0;
+  rippleT[0]=RIPPLE_NONE;
+  rippleT[1]=RIPPLE_NONE;
+  rippleFlag[0]=0;
+  rippleFlag[1]=0;
   framesLeft=GAME_SECONDS*50;
   mapSeq=1;
   fruitsEaten=0;
@@ -1635,10 +1762,7 @@ void setState(GameState nextState){
       // Holding SELECT and START as the game starts puts the original high scores back
       readInput();
       resetMessage=(PRESSING_START && PRESSING_OPTION);
-      if(resetMessage){
-        scoresReset();
-      }
-      scoresInit();
+      scoresInit(resetMessage);
       if(resetMessage){
         // Say so, in the middle of the screen, for a couple of seconds before the title appears
         setLayoutFull(BANK_SCORES);
@@ -1673,7 +1797,8 @@ void setState(GameState nextState){
     case ready:
       startGame();
       audioMute();
-      drawStr_P(PSTR("READY"),13,4);
+      showReady(1);
+      readyContinue=0;
       introIx=0;
       introTimer=0;
     break;
@@ -1734,6 +1859,7 @@ void playFrame(){
   --framesLeft;
   if((framesLeft%50)==0){
     hudDirty=1;
+    rippleFlag[1]=1;
   }
   if(wipeHalf!=255 && (wipeRippling || (tick%WIPE_FRAMES)==0)){
     wipeStep();
@@ -1759,6 +1885,7 @@ void playFrame(){
   if(!demoMode){
     audioUpdate();
   }
+  rippleUpdate();
   if(hudDirty){
     drawHud();
   }else if(!demoMode && (tick%LIFE_CHOMP_FRAMES)==0){
@@ -1770,6 +1897,9 @@ void playFrame(){
 void gameLoop(){
   // Wait until the current display frame has finished rendering
   waitFrame();
+
+  // This is the gap between frames: the only time the EEPROM can be used
+  scoresFlush();
 
   // Update the state of the controller/button inputs
   readInput();
@@ -1798,6 +1928,9 @@ void gameLoop(){
         setState(ready);
       }else{
         playFrame();
+        if(gameState==demo && (tick&31)==0){
+          showDemo(!(tick&32));
+        }
         if(gameState==demo && ++attractTimer>=DEMO_FRAMES){
           setState(ranking);
         }
@@ -1814,10 +1947,11 @@ void gameLoop(){
 
     case ready:
     {
-      // Hold still while the start music plays
+      // Hold still while the start music plays (or, after losing a life, for a moment)
+      rippleUpdate();
       updateSprites();
-      if(introUpdate()){
-        clearBlock(13,4,5);
+      if(readyContinue?(++dyingTimer>=READY_CONTINUE_FRAMES):introUpdate()){
+        showReady(0);
         audioMute();
         gameState=playing;
         tick=0;
@@ -1837,6 +1971,7 @@ void gameLoop(){
         break;
       }
       ++dyingTimer;
+      rippleUpdate();       // (a ripple that was running when Pac-Man was caught finishes)
       if(dyingTimer==DEATH_PAUSE){
         sfxStart(SFX_DEATH,DEATH_ANIM_FRAMES);
       }
@@ -1851,13 +1986,18 @@ void gameLoop(){
           respawn();
           hudDirty=1;
           drawHud();
-          gameState=playing;
+          audioMute();         // (the last note of the death sound would carry on)
+          showReady(1);
+          readyContinue=1;
+          dyingTimer=0;
+          gameState=ready;
         }
       }
     }
     break;
 
     case gameOver:
+      rippleUpdate();
       gameOverSprites();
       if(tick>GAMEOVER_FRAMES){
         // A score that makes the table goes on to enter a name; otherwise it is back to the title
@@ -1873,6 +2013,18 @@ void gameLoop(){
   // handles sprite processing and other setup to render the next frame. You should not perform any other drawing operations after this, until the frame has rendered and the gameLoop starts again
   processFrame();
 
+#if DEBUG_FRAME_END
+  // Where in the frame the game's work finished: it should be in the gap between frames (scan line 298 to 311, then 0 to 47). If it is
+  // between 48 and 297 the work overran into the picture, which can make the sprites near the top flicker. Shows the latest such line.
+  {
+    static uint16_t worst=0;
+    uint16_t s=scanline;
+    if(s>=TOP_EDGE && s<VBLANK_START && s!=worst){
+      worst=s;
+    }
+    drawNumPad(worst,29,0,3);
+  }
+#endif
 }
 
 #endif

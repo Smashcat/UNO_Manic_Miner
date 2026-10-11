@@ -45,6 +45,7 @@ typedef struct Ghost{
     uint8_t state;      // GS_*
     uint8_t chain;      // while showing its score: which one (0-7 for 400, 800, 1200 ... 3200)
     uint16_t timer;     // frames until released from the pen
+    uint8_t calm;       // eaten during the current power pellet: not frightened again until the next one
 } Ghost;
 
 Ghost ghosts[NUM_GHOSTS];
@@ -78,11 +79,15 @@ int16_t camX;
 uint8_t viewTC;
 
 uint32_t score;
+uint32_t scoreSeen;                       // the score as last looked at by the ripple code
+uint8_t rippleT[2]={RIPPLE_NONE,RIPPLE_NONE};   // frames into the ripple of the score (0) and time (1) digits, or RIPPLE_NONE
+uint8_t rippleFlag[2];                    // a new ripple is wanted
 uint8_t lives;
 uint16_t framesLeft;
 uint16_t scareTimer;
 uint8_t ghostChain;
 uint8_t dyingTimer;     // counts up while dying
+uint8_t readyContinue;  // the READY pause is the one after losing a life (a short wait, no start music)
 uint8_t tick;
 uint16_t rng=0xACE1;
 uint8_t hudDirty;
@@ -124,6 +129,8 @@ uint8_t demoMode;
 uint8_t resetMessage;    // the high scores were just cleared at start-up, so say so
 uint8_t screenAfterRank;
 uint8_t rankBlank=255;   // high score entry that is currently blinked off (255 = none)
+int16_t rankAnimT;        // steps of the ripple that fills in the high score list (-1 = not started)
+uint8_t rankClock,rankStepWait;   // frames since the page started, and since the last step of the ripple
 uint8_t rankFrame;       // frames since the blink last moved on
 int16_t paradeS;         // how far along its path the leader of the high score parade (Pac-Man) is, in pixels
 

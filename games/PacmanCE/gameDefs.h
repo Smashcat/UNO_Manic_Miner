@@ -30,8 +30,31 @@
 #define MAX_LIVES                   5      // (the HUD has room for this many life icons)
 #define LIFE_CHOMP_FRAMES           8      // the life icons at the bottom change mouth shape this often
 
+// Testing: 1 shows (top right) the scan line on which the game finished its work for the frame; see the end of gameLoop()
+#define DEBUG_FRAME_END             0
+#define READY_X                     13      // the READY picture at the start of a game: first tile column, and its width and top row (it is two rows high)
+#define READY_W                     8
+#define READY_ROW                   4
+#define DEMO_X                      14      // the DEMO picture (demo mode) is in the same place, centred on the READY picture; it is 7 tiles wide
+#define DEMO_W                      7
+#define READY_CONTINUE_FRAMES       100     // how long READY shows before play carries on after losing a life
+
+// The score and time digits ripple when they change (see rippleUpdate): each digit goes through RIPPLE_STEPS different heights, for
+// RIPPLE_STEP_FRAMES frames each, and the digit to its left starts RIPPLE_DIGIT_DELAY frames after it. The headings and digits are
+// placed by tile column (the time ends at the right hand edge: heading, then minutes, colon, tens of seconds, seconds)
+#define RIPPLE_STEPS                4
+#define RIPPLE_STEP_FRAMES          3
+#define RIPPLE_DIGIT_DELAY          1
+#define RIPPLE_NONE                 255     // (no ripple running)
+#define SCORE_DIGITS                7
+#define SCORE_TITLE_W               9
+#define SCORE_TITLE_X               1
+#define SCORE_X                     (SCORE_TITLE_X+SCORE_TITLE_W)     // first digit of the score
+#define TIME_TITLE_W                6
+#define TIME_X                      22      // first tile of the TIME heading
+
 // An extra life is awarded every EXTRA_LIFE_SCORE points, with a jingle of dings on the ghost sound channel
-#define EXTRA_LIFE_SCORE            20000
+#define EXTRA_LIFE_SCORE            30000
 #define EXTRA_LIFE_DING_FRAMES      6       // frames for each ding (the last frame of each is a gap)
 #define EXTRA_LIFE_DINGS            5       // dings in a group
 #define EXTRA_LIFE_FRAMES           (EXTRA_LIFE_DING_FRAMES*EXTRA_LIFE_DINGS)
@@ -43,7 +66,7 @@
 // replaced) shortens it by SCARE_REDUCTION, down to a minimum of SCARE_MIN_FRAMES
 #define SCARE_FRAMES                400      // 8 seconds
 #define SCARE_REDUCTION             25       // half a second less each time
-#define SCARE_MIN_FRAMES            225      // but never less than 4.5 seconds
+#define SCARE_MIN_FRAMES            200      // but never less than 4 seconds
 
 
 #define SCORE_DOT                   10
@@ -65,7 +88,7 @@
 #define GHOST_EAT_FREEZE            6
 
 // Frames between each column of the half-map being replaced after the fruit is eaten
-#define WIPE_FRAMES                 2
+#define WIPE_FRAMES                 3
 
 // ---- World layout -------------------------------------------------------------------------------------------
 // The world is a left half-map, a fixed centre strip and a right half-map, 47x23 cells. A cell is one 8x8 tile.
@@ -163,7 +186,7 @@
 #define SIREN_SPEED_MAX             10
 
 // How long the demo runs before it gives way to the high scores (frames)
-#define DEMO_FRAMES                 500
+#define DEMO_FRAMES                 1000  // 20 seeconds (or until demo player dies)
 // The parade round the high score table (Pac-Man, then the four ghosts) runs along a path in the margins round it, at this many
 // pixels a frame, with this many pixels between each character. It ends when the last ghost has gone off the right hand side
 #define PARADE_SPEED                3
@@ -173,9 +196,23 @@
 #define PARADE_TOP                  26       // y of the run across between the title and the table, and along the bottom
 #define PARADE_BOTTOM               208
 #define PARADE_END                  (((256-PARADE_LEFT)+(PARADE_BOTTOM-PARADE_TOP)+(PARADE_RIGHT-PARADE_LEFT)+(PARADE_BOTTOM-PARADE_TOP)+(256-PARADE_RIGHT))+(PARADE_SPACING*4))
+
 // Testing: 1 starts the game on the high score page (it goes on to the title screen afterwards as usual)
-#define START_ON_RANKING            0
-#define RANK_BLINK_FRAMES           3       // each high score entry blinks off for this many frames (50 per second, so 5 = 100ms) in turn
+#ifndef START_ON_RANKING
+#define START_ON_RANKING            1
+#endif
+#define RANK_BLINK_FRAMES           1       // each high score entry blinks off for this many frames (50 per second, so 5 = 100ms) in turn
+// The scores and names of the high score table appear as it slides in: each glyph (the 7 digits of the score, then the 3 letters of the name) shows a
+// dash, then the squashed version, then the real one, a step after the glyph to its left. The first entry starts RANK_FILL_START frames after the page
+// starts to slide in, the ripple moves on a step every RANK_FILL_FRAMES frames (so a bigger number is slower), and each entry after the first starts
+// RANK_FILL_ROW_DELAY steps after the one above. The page slides in for 131 frames and then stays still while the parade runs, and scrolls off after that.
+#define RANK_FILL_START             50      // (the list slides into view from about frame 45, the names from about 85)
+#define RANK_FILL_FRAMES            2
+#define RANK_FILL_ROW_DELAY         9
+#define RANK_GLYPHS                 10
+#define RANK_FILL_END               (((NUM_SCORES-1)*RANK_FILL_ROW_DELAY)+RANK_GLYPHS+2)       // (in steps)
+// Once the list has filled in, each entry blinks off in turn (RANK_BLINK_FRAMES each) when this is 1
+#define RANK_BLINK                  0
 #define RESET_MESSAGE_FRAMES        100      // "HIGH SCORES RESET" (shown when they are cleared at start-up) stays up for this long
 #define GAMEOVER_FRAMES             250      // (must stay under 255 - it is counted by "tick")
 
@@ -185,6 +222,7 @@
 #define GAMEOVER_GLIDE_FRAMES       48
 #define GAMEOVER_WORD_DELAY         0
 #define GAMEOVER_WAVE_FRAMES        2
+#define GAMEOVER_WAVE_PHASE         16      // where in the wave GAME starts (of 64): the words are already bobbing quickly, not near the top, when they slide into view
 
 // ---- High scores -----------------------------------------------------------------------------------------------
 #define NUM_SCORES                  10
