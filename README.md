@@ -1,7 +1,7 @@
 # Arduino UNO Game Engine
 Manic Miner, Scramble and Space Invaders on the Arduino UNO with composite output
 
-This is a project to demonstrate the use of my game engine, with a port of Manic Miner, originally for the ZX Spectrum, by Matthew Smith, and the original Scramble and Space Invaders arcade machine. Please note that this is for the original Arduino UNO with the ATMega328P microcontroller - it will not work on any other versions of the Arduino. Also, some of the cheaper "Arduino compatible" boards use resonators instead of crystals for their clock. These are nowhere near accurate enough to generate the video signal. I have tried several and it caused extreme jitter in the image. If you can, use an official Arduino, or at least a board with a proper 16Mhz crystal!!
+This is a project to demonstrate the use of my game engine, with a port of Manic Miner, originally for the ZX Spectrum, by Matthew Smith, and the original Scramble and Space Invaders arcade machine, it also now has the console game Pacman Championship Edition. Please note that this is for the original Arduino UNO with the ATMega328P microcontroller - it will not work on any other versions of the Arduino. Also, some of the cheaper "Arduino compatible" boards use resonators instead of crystals for their clock. These are nowhere near accurate enough to generate the video signal. I have tried several and it caused extreme jitter in the image. If you can, use an official Arduino, or at least a board with a proper 16Mhz crystal!!
 
 
 ## Engine Features:
@@ -48,11 +48,21 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 + 2 Channel Audio
 
 
+## Pacman Championsip Edition Features
+
++ Fast moving gameplay with smooth pixel scrolling
++ Optimized graphics for the 1-bit display
++ 2 Channel PWM audio, with sound effects closely matching original Pacman game
++ High score list (hold SELECT+START at power on to reset list)
+
+
+
 ## YouTube:
  
 [![Manic Miner on Arduino UNO](https://img.youtube.com/vi/dm_dUSeIqC4/0.jpg)](https://www.youtube.com/watch?v=dm_dUSeIqC4)
-[![Manic Miner on Arduino UNO](https://img.youtube.com/vi/EYmaM6yEfL8/0.jpg)](https://www.youtube.com/watch?v=EYmaM6yEfL8)
-[![Manic Miner on Arduino UNO](https://img.youtube.com/vi/bSSh6-Lymfg/0.jpg)](https://www.youtube.com/watch?v=bSSh6-Lymfg)
+[![Scramble on Arduino UNO](https://img.youtube.com/vi/EYmaM6yEfL8/0.jpg)](https://www.youtube.com/watch?v=EYmaM6yEfL8)
+[![Space Invaders on Arduino UNO](https://img.youtube.com/vi/bSSh6-Lymfg/0.jpg)](https://www.youtube.com/watch?v=bSSh6-Lymfg)
+[![Pacman Championship Edition on Arduino UNO](https://img.youtube.com/vi/qakuvavLC40/0.jpg)](https://www.youtube.com/watch?v=qakuvavLC40)
 
 ## Screen-shots:
 
