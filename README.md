@@ -1,7 +1,7 @@
 # Arduino UNO Game Engine
 Manic Miner, Scramble and Space Invaders on the Arduino UNO with composite output
 
-This is a project to demonstrate the use of my game engine, with a port of Manic Miner, originally for the ZX Spectrum, by Matthew Smith, and the original Scramble and Space Invaders arcade machine. Please note that this is for the original Arduino UNO with the ATMega328P microcontroller - it will not work on any other versions of the Arduino. Also, some of the cheaper "Arduino compatible" boards use resonators instead of crystals for their clock. These are nowhere near accurate enough to generate the video signal. I have tried several and it caused extreme jitter in the image. If you can, use an official Arduino, or at least a board with a proper 16Mhz crystal!!
+This is a project to demonstrate the use of my game engine, with a port of Manic Miner, originally for the ZX Spectrum, by Matthew Smith, and the original Scramble and Space Invaders arcade machine, it also now has the console game Pacman Championship Edition. Please note that this is for the original Arduino UNO with the ATMega328P microcontroller - it will not work on any other versions of the Arduino. Also, some of the cheaper "Arduino compatible" boards use resonators instead of crystals for their clock. These are nowhere near accurate enough to generate the video signal. I have tried several and it caused extreme jitter in the image. If you can, use an official Arduino, or at least a board with a proper 16Mhz crystal!!
 
 
 ## Engine Features:
@@ -46,6 +46,15 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 + Smooth pixel scrolling, with fixed starfield in background
 + Persistant high score (can be reset by holding Start at boot)
 + 2 Channel Audio
+
+
+## Pacman Championsip Edition Features
+
++ Fast moving gameplay with smooth pixel scrolling
++ Optimized graphics for the 1-bit display
++ 2 Channel PWM audio, with sound effects closely matching original Pacman game
++ High score list (hold SELECT+START at power on to reset list)
+
 
 
 ## YouTube:
