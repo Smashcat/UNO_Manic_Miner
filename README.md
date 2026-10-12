@@ -54,6 +54,7 @@ This is a project to demonstrate the use of my game engine, with a port of Manic
 + Optimized graphics for the 1-bit display
 + 2 Channel PWM audio, with sound effects closely matching original Pacman game
 + High score list (hold SELECT+START at power on to reset list)
++ [WebASM demo available! ](https://www.smashcat.org/pacman-ce/)
 
 
 
