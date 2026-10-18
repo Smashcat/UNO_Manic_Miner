@@ -75,17 +75,20 @@ loadHi:
  ;                                R25 R24                               R23 R22                         R21 R20
 
 processSprite:
-  
+  PUSH R29
+  PUSH R28
+  PUSH R1
+  PUSH R0
+
   MOVW R30,R20;     // Move sprite instance data pointer into Z
-  MOVW R20,R28;     // Store the Y register (need to preserve stack frame on exit)
+  LDI  R20,1
   MOVW R28,R24;     // Move the sprite graphical data pointer into Y
   
   LD R18,Z+         // Sprite Y pos
   ST Y+,R18         // Just copy Y pos into processed sprite data - no need to do anything with it here
   
   LD R18,Z+         // Sprite X pos in R18
-  LDS R19,hScroll   // Horizontal scroll is a 16bit value, with lower 3 bits used as bit offset on display
-  MOV R24,R19       // Duplicate into R24
+  LDS R24,hScroll   // Horizontal scroll is a 16bit value, with lower 3 bits used as bit offset on display
   ANDI R24,0x07     // Keep the bottom 3 bits of X position to shift sprite data right in destination
   SUB R18,R24       // Subtract horizontal scroll offset from sprite X
   MOV R19,R18       // Duplicate into R19
@@ -99,13 +102,9 @@ processSprite:
   LD   R19,Z+       // sprite definition index
   MOVW R30,R22      // Base pointer for sprite defs - now R23:R22 free
   LDI  R22,32       // Multiply the sprite index by 32
-  PUSH R1
-  PUSH R0
-  MUL  R19,R22
-  ADD  R30,R0        // Add the sprite index * 32 to the base pointer address
+  MUL  R19,R22      // Multiply result is in R1:R0 pair
+  ADD  R30,R0       // Add the sprite index * 32 to the base pointer address
   ADC  R31,R1
-  POP  R0
-  POP  R1
   
   ; //Now loop through the sprite graphical data, dropping it into the processed sprite data, which is 3 x 16 bytes to allow for shifting
   ; // Y is pointing to the destination array
@@ -113,42 +112,44 @@ processSprite:
   ; // R22 is pointing to the source array offset in program memory
   ; // R18 is the number of bits to shift right
   LDI R19,16        // 16 rows of data
-  EOR R26,R26       // Used to zero out 3rd byte per row initially
+
+  EOR  R21,R21      // zero out the 3rd byte in the row, so we're not showing old data that's not rotated out!
 
 lineLoop:
-  LPM R24,Z+        // Load from program memory
-  ST Y,R24
-  LPM R24,Z+
-  STD Y+16,R24
-  STD Y+32,R26       // zero out the 3rd byte in the row, so we're not showing old data that's not rotated out!
-  CP R18,R26        // Check number of bits to shift against zero
+  LPM R0,Z+        // Load from program memory
+  LPM R1,Z+
+
+  CP R18,R21        // Check number of bits to shift against zero
   BREQ skipShift    // Nothing to shift?
 
   MOV R24,R18       // Number of bits to shift
   CLC               // Clear the carry flag - no need to do it in loop, as the DEC resets it
 
-shiftLoop:          // Shift sprite graphical data ro the right by the horizontal position &0x07 (12 clocks per loop)
-  LD R25,Y
-  ROR R25   
-  ST Y,R25
-  
-  LDD R25,Y+16
-  ROR R25
-  STD Y+16,R25
-  
-  LDD R25,Y+32
-  ROR R25
-  STD Y+32,R25
-  
+shiftLoop:          // Shift sprite graphical data to the right by the horizontal position &0x07 (6 clocks per loop)
+  ROR R0
+  ROR R1
+  ROR R21
   DEC R24
   BRNE shiftLoop
   
 skipShift:
-  INC R28      // Move Y to point to next destination
+
+  ST Y,R0
+  STD Y+16,R1
+  STD Y+32,R21
+
+  EOR R21,R21
+
+  ADD R28,R20       // Move Y to point to next destination
+  ADC R29,R21
   DEC R19
   BRNE lineLoop;
 
-  MOVW R28,R20  // Restore Y
+  POP  R0
+  POP  R1
+  POP R28
+  POP R29
+  
   RET
 
 
